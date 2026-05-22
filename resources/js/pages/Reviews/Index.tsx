@@ -1,4 +1,4 @@
-import { Head, Inertia, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import { Review, User, BreadcrumbItem } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import ReviewList from '@/components/review-list';
@@ -29,7 +29,7 @@ export default function Index({ reviews, mine, auth }: IndexProps) {
             return;
         }
 
-        Inertia.delete(route('reviews.destroy', reviewId), {
+        router.delete(route('reviews.destroy', reviewId), {
             preserveScroll: true,
         });
     };
@@ -76,7 +76,7 @@ export default function Index({ reviews, mine, auth }: IndexProps) {
                     reviews={reviews}
                     currentUserId={auth?.user?.id}
                     onEditReview={(review) => {
-                        Inertia.visit(route('reviews.edit', review.id));
+                        router.visit(route('reviews.edit', review.id));
                     }}
                     onDeleteReview={handleDelete}
                     emptyMessage="Aún no hay reseñas disponibles. Sé el primero en compartir tu experiencia."

@@ -1,4 +1,4 @@
-import { Head, Inertia, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Review, Service, User, BreadcrumbItem } from '@/types';
 import ReviewList from '@/components/review-list';
@@ -69,11 +69,11 @@ export default function ServicePage({ service, reviews, average_rating, currentB
                                 reviews={reviews}
                                 currentUserId={auth?.user?.id}
                                 onEditReview={(review) => {
-                                    Inertia.visit(route('reviews.edit', review.id));
+                                    router.visit(route('reviews.edit', review.id));
                                 }}
                                 onDeleteReview={(reviewId) => {
                                     if (!window.confirm('¿Eliminar reseña?')) return;
-                                    Inertia.delete(route('reviews.destroy', reviewId), {
+                                    router.delete(route('reviews.destroy', reviewId), {
                                         preserveScroll: true,
                                     });
                                 }}
