@@ -38,3 +38,43 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface Review {
+    id: number;
+    user_id: number;
+    service_id: number;
+    booking_id: number;
+    rating: number;
+    comment: string | null;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+    service?: Service;
+    booking?: Booking;
+}
+
+export interface Service {
+    id: number;
+    user_id: number;
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    latitude: number;
+    longitude: number;
+    average_rating: number;
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown;
+}
+
+export interface Booking {
+    id: number;
+    user_id: number;
+    service_id: number;
+    date: string;
+    status: 'pendiente' | 'confirmada' | 'cancelada' | 'completada';
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown;
+}

@@ -16,14 +16,17 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('user_id');
-
             $table->unsignedBigInteger('service_id');
-
             $table->unsignedBigInteger('booking_id');
 
-            $table->integer('rating');
-
+            $table->integer('rating'); // 1-5
             $table->text('comment')->nullable();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('service_id')->references('id')->on('services')->onDelete('cascade');
+            $table->foreign('booking_id')->references('id')->on('bookings')->onDelete('cascade');
+
+            $table->unique('booking_id'); // Una reseña por reserva
 
             $table->timestamps();
         });
