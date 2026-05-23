@@ -4,230 +4,199 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ReviewStoreRequest;
 use App\Http\Requests\ReviewUpdateRequest;
-use App\Models\Review;
 use App\Models\Booking;
+use App\Models\Review;
 use App\Models\Service;
-use App\Support\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ReviewController extends Controller
 {
-    /**
-     * Listar todas las reseñas (opcional: filtrar por servicio)
-     * GET /api/reviews
-     * GET /api/reviews?service_id=1
-     */
     public function index(Request $request)
     {
-        try {
-            $query = Review::query();
+        $query = Review::query();
 
-            // Filtrar por servicio si se proporciona
-            if ($request->has('service_id')) {
-                $query->where('service_id', $request->service_id);
+        if ($request->filled('service_id')) {
+            $query->where('service_id', $request->service_id);
+        }
+
+        $reviews = $query->with(['user', 'service', 'booking'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return Inertia::render('Reviews/Index', [
+            'reviews' => $reviews,
+            'query' => $request->only(['service_id']),
+        ]);
+    }
+
+    public function create(Request $request, ?Booking $booking = null)
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            abort(403);
+        }
+
+        if ($booking) {
+            if ($booking->user_id !== $user->id) {
+                abort(403);
             }
 
-            $reviews = $query->with(['user', 'service', 'booking'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $bookings = collect([$booking->load(['service', 'user'])]);
+            $selectedServiceId = $booking->service_id;
+        } else {
+            $bookingsQuery = Booking::where('user_id', $user->id)
+                ->whereIn('status', ['completed', 'completada'])
+                ->whereNotIn('id', Review::select('booking_id'))
+                ->with('service');
 
-            return ApiResponse::success($reviews, "Reseñas obtenidas correctamente");
-        } catch (\Exception $e) {
-            return ApiResponse::error("Error al obtener reseñas: " . $e->getMessage(), 500);
+            if ($request->filled('service')) {
+                $bookingsQuery->where('service_id', $request->input('service'));
+            }
+
+            $bookings = $bookingsQuery->get();
+            $selectedServiceId = $request->input('service');
         }
+
+        return Inertia::render('Reviews/Create', [
+            'bookings' => $bookings,
+            'selectedServiceId' => $selectedServiceId,
+        ]);
     }
 
-    /**
-     * Obtener reseñas de un servicio específico
-     * GET /api/reviews/service/{serviceId}
-     */
-    public function serviceReviews($serviceId)
-    {
-        try {
-            $service = Service::findOrFail($serviceId);
-
-            $reviews = $service->reviews()
-                ->with('user')
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            return ApiResponse::success(
-                [
-                    'service' => $service,
-                    'reviews' => $reviews,
-                    'average_rating' => $service->average_rating
-                ],
-                "Reseñas del servicio obtenidas correctamente"
-            );
-        } catch (\Exception $e) {
-            return ApiResponse::error("Error al obtener reseñas del servicio: " . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Obtener una reseña específica
-     * GET /api/reviews/{id}
-     */
-    public function show($id)
-    {
-        try {
-            $review = Review::with(['user', 'service', 'booking'])->findOrFail($id);
-
-            return ApiResponse::success($review, "Reseña obtenida correctamente");
-        } catch (\Exception $e) {
-            return ApiResponse::error("Reseña no encontrada", 404);
-        }
-    }
-
-    /**
-     * Crear una nueva reseña
-     * POST /api/reviews
-     */
     public function store(ReviewStoreRequest $request)
     {
-        try {
-            $booking = Booking::findOrFail($request->booking_id);
-            $user = Auth::user();
+        $booking = Booking::findOrFail($request->booking_id);
+        $user = Auth::user();
 
-            // Validar que la reserva pertenezca al usuario autenticado
-            if ($booking->user_id !== $user->id) {
-                return ApiResponse::error("No tienes permiso para reseñar esta reserva", 403);
-            }
-
-            // Validar que la reserva esté completada
-            if ($booking->status !== 'completada') {
-                return ApiResponse::error("Solo se pueden reseñar reservas completadas", 400);
-            }
-
-            // Validar que no exista ya una reseña para esta reserva
-            $existingReview = Review::where('booking_id', $booking->id)->first();
-            if ($existingReview) {
-                return ApiResponse::error("Ya existe una reseña para esta reserva", 400);
-            }
-
-            // Crear la reseña
-            $review = Review::create([
-                'user_id' => $user->id,
-                'service_id' => $booking->service_id,
-                'booking_id' => $booking->id,
-                'rating' => $request->rating,
-                'comment' => $request->comment
-            ]);
-
-            // Recalcular el promedio de calificaciones del servicio
-            $this->updateServiceRating($booking->service_id);
-
-            // Obtener la reseña con sus relaciones
-            $review->load(['user', 'service', 'booking']);
-
-            return ApiResponse::success($review, "Reseña creada correctamente", 201);
-        } catch (\Exception $e) {
-            return ApiResponse::error("Error al crear reseña: " . $e->getMessage(), 500);
+        if (! $user || $booking->user_id !== $user->id) {
+            return back()->with('error', 'No tienes permiso para reseñar esta reserva')->withInput();
         }
+
+        if (! $this->isCompletedStatus($booking->status)) {
+            return back()->with('error', 'Solo se pueden reseñar reservas completadas')->withInput();
+        }
+
+        if (Review::where('booking_id', $booking->id)->exists()) {
+            return back()->with('error', 'Ya existe una reseña para esta reserva')->withInput();
+        }
+
+        $review = Review::create([
+            'user_id' => $user->id,
+            'service_id' => $booking->service_id,
+            'booking_id' => $booking->id,
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
+
+        $this->updateServiceAverageRating($booking->service_id);
+
+        return redirect()->route('reviews.show', $review)
+            ->with('success', 'Reseña creada correctamente');
     }
 
-    /**
-     * Actualizar una reseña
-     * PUT /api/reviews/{id}
-     */
-    public function update($id, ReviewUpdateRequest $request)
+    public function show(Review $review)
     {
-        try {
-            $review = Review::findOrFail($id);
-            $user = Auth::user();
+        $review->load(['user', 'service', 'booking']);
 
-            // Validar que el usuario sea el dueño de la reseña
-            if ($review->user_id !== $user->id) {
-                return ApiResponse::error("No tienes permiso para editar esta reseña", 403);
-            }
-
-            // Actualizar la reseña
-            $review->update([
-                'rating' => $request->rating ?? $review->rating,
-                'comment' => $request->comment ?? $review->comment
-            ]);
-
-            // Recalcular el promedio de calificaciones del servicio
-            $this->updateServiceRating($review->service_id);
-
-            // Obtener la reseña con sus relaciones
-            $review->load(['user', 'service', 'booking']);
-
-            return ApiResponse::success($review, "Reseña actualizada correctamente");
-        } catch (\Exception $e) {
-            return ApiResponse::error("Error al actualizar reseña: " . $e->getMessage(), 500);
-        }
+        return Inertia::render('Reviews/Show', [
+            'review' => $review,
+        ]);
     }
 
-    /**
-     * Eliminar una reseña
-     * DELETE /api/reviews/{id}
-     */
-    public function destroy($id)
+    public function edit(Review $review)
     {
-        try {
-            $review = Review::findOrFail($id);
-            $user = Auth::user();
+        $this->authorize('update', $review);
 
-            // Validar que el usuario sea el dueño de la reseña
-            if ($review->user_id !== $user->id) {
-                return ApiResponse::error("No tienes permiso para eliminar esta reseña", 403);
-            }
+        $review->load(['user', 'service', 'booking']);
 
-            $serviceId = $review->service_id;
-
-            // Eliminar la reseña
-            $review->delete();
-
-            // Recalcular el promedio de calificaciones del servicio
-            $this->updateServiceRating($serviceId);
-
-            return ApiResponse::success(null, "Reseña eliminada correctamente");
-        } catch (\Exception $e) {
-            return ApiResponse::error("Error al eliminar reseña: " . $e->getMessage(), 500);
-        }
+        return Inertia::render('Reviews/Edit', [
+            'review' => $review,
+        ]);
     }
 
-    /**
-     * Calcular y actualizar el promedio de calificaciones de un servicio
-     */
-    private function updateServiceRating($serviceId)
+    public function update(ReviewUpdateRequest $request, Review $review)
     {
-        try {
-            $service = Service::findOrFail($serviceId);
+        $this->authorize('update', $review);
 
-            // Calcular el promedio de ratings
-            $averageRating = Review::where('service_id', $serviceId)
-                ->avg('rating');
+        $review->update($request->validated());
+        $this->updateServiceAverageRating($review->service_id);
 
-            // Actualizar el servicio
-            $service->update([
-                'average_rating' => $averageRating ?? 0
-            ]);
-        } catch (\Exception $e) {
-            // Log silencioso de errores en recalculación
-            \Log::error("Error al recalcular rating del servicio: " . $e->getMessage());
-        }
+        return redirect()->route('reviews.show', $review)
+            ->with('success', 'Reseña actualizada correctamente');
     }
 
-    /**
-     * Obtener reseñas del usuario autenticado
-     * GET /api/reviews/user/me
-     */
+    public function destroy(Review $review)
+    {
+        $this->authorize('delete', $review);
+
+        $serviceId = $review->service_id;
+        $review->delete();
+        $this->updateServiceAverageRating($serviceId);
+
+        return back()->with('success', 'Reseña eliminada correctamente');
+    }
+
+    public function serviceReviews(Service $service)
+    {
+        $reviews = $service->reviews()
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $currentBooking = null;
+        $currentUser = Auth::user();
+
+        if ($currentUser) {
+            $currentBooking = Booking::where('user_id', $currentUser->id)
+                ->where('service_id', $service->id)
+                ->whereIn('status', ['completed', 'completada'])
+                ->whereNotIn('id', Review::select('booking_id'))
+                ->with('service')
+                ->first();
+        }
+
+        return Inertia::render('Reviews/Service', [
+            'service' => $service,
+            'reviews' => $reviews,
+            'average_rating' => $service->average_rating,
+            'currentBooking' => $currentBooking,
+            'currentUser' => $currentUser,
+        ]);
+    }
+
     public function userReviews()
     {
-        try {
-            $user = Auth::user();
+        $user = Auth::user();
 
-            $reviews = Review::where('user_id', $user->id)
-                ->with(['service', 'booking'])
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            return ApiResponse::success($reviews, "Reseñas del usuario obtenidas correctamente");
-        } catch (\Exception $e) {
-            return ApiResponse::error("Error al obtener reseñas del usuario: " . $e->getMessage(), 500);
+        if (! $user) {
+            abort(403);
         }
+
+        $reviews = Review::where('user_id', $user->id)
+            ->with(['service', 'booking'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return Inertia::render('Reviews/Index', [
+            'reviews' => $reviews,
+            'mine' => true,
+        ]);
+    }
+
+    private function updateServiceAverageRating(int $serviceId): void
+    {
+        $averageRating = Review::where('service_id', $serviceId)
+            ->average('rating');
+
+        Service::where('id', $serviceId)
+            ->update(['average_rating' => $averageRating ?? 0]);
+    }
+
+    private function isCompletedStatus(?string $status): bool
+    {
+        return in_array($status, ['completed', 'completada'], true);
     }
 }

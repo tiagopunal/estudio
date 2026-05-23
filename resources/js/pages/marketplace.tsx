@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, Clock3, MapPin, Search, Star, Sparkles } from 'lucide-react';
+import { ArrowRight, Clock3, MapPin, Search, Sparkles, Star } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -77,41 +77,41 @@ export default function Marketplace() {
 
     const handleReserve = (service: (typeof services)[number]) => {
         setSelectedService(service);
-        setBookingStatus(`Solicitud preparada para ${service.title}. Continúa con el flujo de reserva desde el dashboard.`);
+        setBookingStatus(`Reserva preparada para ${service.title}. Podés seguir el flujo desde aquí o volver al dashboard.`);
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Marketplace" />
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6">
-                <div className="rounded-2xl border border-sidebar-border/70 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-6 dark:border-sidebar-border dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+                <div className="overflow-hidden rounded-[28px] border border-emerald-200/70 bg-[linear-gradient(135deg,rgba(2,6,23,0.98),rgba(6,78,59,0.92),rgba(34,211,238,0.85))] p-6 text-white shadow-[0_28px_80px_rgba(15,23,42,0.2)] dark:border-white/10">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl space-y-3">
-                            <p className="text-sm uppercase tracking-[0.2em] text-emerald-600">Marketplace local</p>
-                            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Encuentra, compara y reserva servicios cerca tuyo.</h1>
-                            <p className="text-sm text-slate-600 dark:text-slate-300">
-                                Filtra por categoría, revisa calificaciones y accede a acciones rápidas para revisar reseñas o preparar tu reserva.
+                            <p className="text-sm uppercase tracking-[0.3em] text-emerald-100">Marketplace local</p>
+                            <h1 className="text-3xl font-semibold sm:text-4xl">Encuentra, compara y reserva servicios cerca tuyo con un diseño más claro y moderno.</h1>
+                            <p className="text-sm leading-6 text-slate-100/90">
+                                Filtra por categoría, revisa detalle y prepara tu próxima reserva sin salir de esta pantalla.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
-                            <Button asChild>
+                            <Button asChild className="rounded-full bg-emerald-300 text-slate-950 hover:bg-emerald-200">
                                 <Link href={route('dashboard')}>
                                     Volver al dashboard
                                     <ArrowRight className="h-4 w-4" />
                                 </Link>
                             </Button>
-                            <Button asChild variant="outline">
+                            <Button asChild variant="outline" className="rounded-full border-white/70 text-white hover:bg-white/10">
                                 <Link href={route('reviews.demo')}>Ver reseñas</Link>
                             </Button>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
                     <div className="space-y-4">
-                        <div className="rounded-2xl border border-sidebar-border/70 bg-white p-4 dark:bg-slate-900">
+                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
                             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                                <label className="flex flex-1 items-center gap-2 rounded-xl border border-input bg-slate-50 px-3 py-2 dark:bg-slate-950">
+                                <label className="flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-slate-950">
                                     <Search className="h-4 w-4 text-slate-400" />
                                     <input
                                         value={query}
@@ -128,6 +128,11 @@ export default function Marketplace() {
                                             variant={selectedCategory === category ? 'default' : 'outline'}
                                             size="sm"
                                             onClick={() => setSelectedCategory(category)}
+                                            className={
+                                                selectedCategory === category
+                                                    ? '!rounded-full !bg-cyan-400 !text-slate-950 hover:!bg-cyan-300'
+                                                    : '!rounded-full border-slate-200 dark:border-white/10'
+                                            }
                                         >
                                             {category}
                                         </Button>
@@ -138,7 +143,7 @@ export default function Marketplace() {
 
                         <div className="grid gap-4 md:grid-cols-2">
                             {filteredServices.map((service) => (
-                                <div key={service.id} className="rounded-2xl border border-sidebar-border/70 bg-white p-5 dark:bg-slate-900">
+                                <div key={service.id} className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_24px_60px_rgba(16,185,129,0.16)] dark:border-white/10 dark:bg-slate-900">
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
                                             <p className="text-xs uppercase tracking-[0.2em] text-emerald-600">{service.category}</p>
@@ -149,7 +154,7 @@ export default function Marketplace() {
                                         </span>
                                     </div>
 
-                                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{service.description}</p>
+                                    <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{service.description}</p>
 
                                     <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
                                         <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 text-amber-500" /> {service.rating}</span>
@@ -158,13 +163,22 @@ export default function Marketplace() {
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap gap-2">
-                                        <Button type="button" onClick={() => handleReserve(service)}>
-                                            Reservar ahora
+                                        <Button
+                                            type="button"
+                                            asChild
+                                            className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                                        >
+                                            <Link
+                                                href={route('bookings.create', { service_id: service.id })}
+                                                onClick={() => handleReserve(service)}
+                                            >
+                                                Reservar ahora
+                                            </Link>
                                         </Button>
-                                        <Button type="button" variant="outline" onClick={() => setSelectedService(service)}>
+                                        <Button type="button" variant="outline" className="rounded-full border-slate-200 dark:border-white/10" onClick={() => setSelectedService(service)}>
                                             Ver detalles
                                         </Button>
-                                        <Button type="button" variant="ghost" asChild>
+                                        <Button type="button" variant="ghost" asChild className="rounded-full">
                                             <Link href={route('reviews.demo')}>Ver reseñas</Link>
                                         </Button>
                                     </div>
@@ -173,22 +187,22 @@ export default function Marketplace() {
                         </div>
 
                         {filteredServices.length === 0 && (
-                            <div className="rounded-2xl border border-dashed border-sidebar-border/70 bg-white p-6 text-center dark:bg-slate-900">
-                                <p className="text-sm text-slate-600 dark:text-slate-300">No encontramos servicios para ese filtro. Prueba con otra categoría o palabra clave.</p>
+                            <div className="rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center dark:border-white/10 dark:bg-slate-900">
+                                <p className="text-sm text-slate-600 dark:text-slate-300">No encontramos servicios para ese filtro. Probá otra categoría o palabra clave.</p>
                             </div>
                         )}
                     </div>
 
                     <div className="space-y-4">
-                        <div className="rounded-2xl border border-sidebar-border/70 bg-white p-5 dark:bg-slate-900">
-                            <p className="text-sm uppercase tracking-[0.2em] text-emerald-600">Detalle activo</p>
+                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
+                            <p className="text-sm uppercase tracking-[0.3em] text-emerald-600">Detalle activo</p>
                             <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
-                                {selectedService ? selectedService.title : 'Selecciona un servicio'}
+                                {selectedService ? selectedService.title : 'Seleccioná un servicio'}
                             </h2>
-                            <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                                 {selectedService
                                     ? selectedService.description
-                                    : 'Haz clic en “Ver detalles” para cargar la información de un servicio y preparar el próximo paso.'}
+                                    : 'Elegí un servicio para ver su información y preparar el siguiente paso.'}
                             </p>
                             {selectedService && (
                                 <div className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
@@ -199,16 +213,16 @@ export default function Marketplace() {
                             )}
                         </div>
 
-                        <div className="rounded-2xl border border-sidebar-border/70 bg-white p-5 dark:bg-slate-900">
+                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="h-5 w-5 text-amber-500" />
                                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Estado del flujo</h2>
                             </div>
-                            <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                                 {bookingStatus || 'Aquí verás el estado de tus acciones cuando reserves o selecciones un servicio.'}
                             </p>
-                            <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                                <p>Los botones de marketplace ya están conectados a navegación y estados locales interactivos, sin depender de una página externa.</p>
+                            <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                                <p>La experiencia está pensada para que los botones y la información se vean claros, útiles y listos para extenderse con datos reales.</p>
                             </div>
                         </div>
                     </div>

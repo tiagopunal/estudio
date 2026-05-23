@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
+﻿import { Button } from '@/components/ui/button';
 import ReviewCard from '@/components/review-card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Review } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, MessageSquareText, ShieldCheck, Star } from 'lucide-react';
+import { ArrowRight, MessageSquareText, ShieldCheck, Sparkles, Star } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -96,29 +96,29 @@ const demoReviews: Review[] = [
 ];
 
 export default function ReviewsDemo() {
-    const { auth } = usePage().props as { auth: { user: { name: string } } };
+    const { auth } = usePage().props as { auth: { user?: { name?: string } } };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Reseñas" />
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6">
-                <div className="rounded-2xl border border-sidebar-border/70 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-6 dark:border-sidebar-border dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+                <div className="overflow-hidden rounded-[28px] border border-amber-200/70 bg-[linear-gradient(135deg,rgba(2,6,23,0.98),rgba(120,53,15,0.9),rgba(245,158,11,0.8))] p-6 text-white shadow-[0_28px_80px_rgba(120,53,15,0.22)] dark:border-white/10">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl space-y-3">
-                            <p className="text-sm uppercase tracking-[0.2em] text-amber-600">Reseñas destacadas</p>
-                            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Descubre qué dice la comunidad sobre cada servicio.</h1>
-                            <p className="text-sm text-slate-600 dark:text-slate-300">
-                                Esta vista te permite explorar experiencias reales en el proyecto y prepara el flujo para conectar la lógica de calificación con la UI.
+                            <p className="text-sm uppercase tracking-[0.3em] text-amber-100">Reseñas destacadas</p>
+                            <h1 className="text-3xl font-semibold sm:text-4xl">Descubre qué dice la comunidad sobre cada servicio y toma una decisión con confianza.</h1>
+                            <p className="text-sm leading-6 text-slate-100/90">
+                                Esta vista está pensada para mostrar experiencias reales, potencias la confianza del usuario y deja el flujo listo para conectar con tu API.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
-                            <Button asChild>
+                            <Button asChild className="rounded-full bg-amber-300 text-slate-950 hover:bg-amber-200">
                                 <Link href={route('marketplace')}>
                                     Explorar marketplace
                                     <ArrowRight className="h-4 w-4" />
                                 </Link>
                             </Button>
-                            <Button asChild variant="outline">
+                            <Button asChild variant="outline" className="rounded-full border-white/70 text-white hover:bg-white/10">
                                 <Link href={route('login')}>Iniciar sesión para opinar</Link>
                             </Button>
                         </div>
@@ -126,20 +126,20 @@ export default function ReviewsDemo() {
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-                    <div className="rounded-2xl border border-sidebar-border/70 bg-white p-5 dark:bg-slate-900">
+                    <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
                         <div className="flex items-center gap-2">
                             <Star className="h-5 w-5 text-amber-500" />
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Resumen de confianza</h2>
                         </div>
-                        <div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
-                            <p>• {demoReviews.length} reseñas de ejemplo cargadas desde la interfaz.</p>
-                            <p>• El botón “Iniciar sesión para opinar” navega al flujo real de autenticación.</p>
-                            <p>• Puedes conectar esta vista con la API de reseñas cuando el backend de servicios esté listo.</p>
+                        <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                            <p>• {demoReviews.length} reseñas de ejemplo cargadas en la interfaz.</p>
+                            <p>• El botón principal te lleva al marketplace para seguir explorando.</p>
+                            <p>• El layout está listo para conectarse con la API cuando quieras ampliar el flujo real.</p>
                         </div>
 
-                        <div className="mt-5 rounded-xl bg-slate-50 p-4 dark:bg-slate-950">
+                        <div className="mt-5 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
                             <p className="text-sm font-semibold text-slate-900 dark:text-white">Usuario activo</p>
-                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                                 {auth?.user?.name ? `Ahora estás navegando como ${auth.user.name}.` : 'Aún no has iniciado sesión, pero puedes revisar la experiencia pública.'}
                             </p>
                             <div className="mt-3 flex items-center gap-2 text-sm text-emerald-600">
@@ -150,7 +150,7 @@ export default function ReviewsDemo() {
                     </div>
 
                     <div className="space-y-4">
-                        <div className="rounded-2xl border border-sidebar-border/70 bg-white p-4 dark:bg-slate-900">
+                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
                             <div className="flex items-center gap-2">
                                 <MessageSquareText className="h-5 w-5 text-slate-500" />
                                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Opiniones recientes</h2>
