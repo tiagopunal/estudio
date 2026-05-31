@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -15,10 +18,17 @@ Route::get('reviews-demo', function () {
     return Inertia::render('reviews-demo');
 })->name('reviews.demo');
 
+// Rutas públicas de servicios
+Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+    
+    Route::resource('bookings', BookingController::class);
+    Route::resource('services', ServiceController::class)->except(['show']);
+    Route::resource('reviews', ReviewController::class);
 });
 
 require __DIR__.'/settings.php';

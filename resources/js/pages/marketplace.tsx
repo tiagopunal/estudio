@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, Clock3, MapPin, Search, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, Clock3, MapPin, Search, Star } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -60,8 +60,6 @@ const categories = ['Todos', 'Hogar', 'Educación', 'Tecnología'];
 export default function Marketplace() {
     const [query, setQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todos');
-    const [selectedService, setSelectedService] = useState<(typeof services)[number] | null>(null);
-    const [bookingStatus, setBookingStatus] = useState<string | null>(null);
 
     const filteredServices = useMemo(() => {
         return services.filter((service) => {
@@ -74,11 +72,6 @@ export default function Marketplace() {
             return matchesCategory && matchesQuery;
         });
     }, [query, selectedCategory]);
-
-    const handleReserve = (service: (typeof services)[number]) => {
-        setSelectedService(service);
-        setBookingStatus(`Reserva preparada para ${service.title}. Podés seguir el flujo desde aquí o volver al dashboard.`);
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -107,125 +100,93 @@ export default function Marketplace() {
                     </div>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-                    <div className="space-y-4">
-                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                                <label className="flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-slate-950">
-                                    <Search className="h-4 w-4 text-slate-400" />
-                                    <input
-                                        value={query}
-                                        onChange={(event) => setQuery(event.target.value)}
-                                        placeholder="Buscar por servicio, ciudad o palabra clave"
-                                        className="w-full border-0 bg-transparent text-sm outline-none"
-                                    />
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                    {categories.map((category) => (
-                                        <Button
-                                            key={category}
-                                            type="button"
-                                            variant={selectedCategory === category ? 'default' : 'outline'}
-                                            size="sm"
-                                            onClick={() => setSelectedCategory(category)}
-                                            className={
-                                                selectedCategory === category
-                                                    ? '!rounded-full !bg-cyan-400 !text-slate-950 hover:!bg-cyan-300'
-                                                    : '!rounded-full border-slate-200 dark:border-white/10'
-                                            }
-                                        >
-                                            {category}
-                                        </Button>
-                                    ))}
-                                </div>
+                <div className="space-y-4">
+                    <div className="rounded-[24px] border border-slate-200/70 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                            <label className="flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-slate-950">
+                                <Search className="h-4 w-4 text-slate-400" />
+                                <input
+                                    value={query}
+                                    onChange={(event) => setQuery(event.target.value)}
+                                    placeholder="Buscar por servicio, ciudad o palabra clave"
+                                    className="w-full border-0 bg-transparent text-sm outline-none"
+                                />
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                                {categories.map((category) => (
+                                    <Button
+                                        key={category}
+                                        type="button"
+                                        variant={selectedCategory === category ? 'default' : 'outline'}
+                                        size="sm"
+                                        onClick={() => setSelectedCategory(category)}
+                                        className={
+                                            selectedCategory === category
+                                                ? '!rounded-full !bg-cyan-400 !text-slate-950 hover:!bg-cyan-300'
+                                                : '!rounded-full border-slate-200 dark:border-white/10'
+                                        }
+                                    >
+                                        {category}
+                                    </Button>
+                                ))}
                             </div>
                         </div>
+                    </div>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            {filteredServices.map((service) => (
-                                <div key={service.id} className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_24px_60px_rgba(16,185,129,0.16)] dark:border-white/10 dark:bg-slate-900">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p className="text-xs uppercase tracking-[0.2em] text-emerald-600">{service.category}</p>
-                                            <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{service.title}</h2>
-                                        </div>
-                                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200">
-                                            {service.badge}
-                                        </span>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredServices.map((service) => (
+                            <div key={service.id} className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_24px_60px_rgba(16,185,129,0.16)] dark:border-white/10 dark:bg-slate-900">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-emerald-600">{service.category}</p>
+                                        <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{service.title}</h2>
                                     </div>
+                                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200">
+                                        {service.badge}
+                                    </span>
+                                </div>
 
-                                    <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{service.description}</p>
+                                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{service.description}</p>
 
-                                    <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
-                                        <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 text-amber-500" /> {service.rating}</span>
-                                        <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {service.location}</span>
-                                        <span className="inline-flex items-center gap-1"><Clock3 className="h-4 w-4" /> {service.price}</span>
-                                    </div>
+                                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
+                                    <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 text-amber-500" /> {service.rating}</span>
+                                    <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {service.location}</span>
+                                    <span className="inline-flex items-center gap-1"><Clock3 className="h-4 w-4" /> {service.price}</span>
+                                </div>
 
-                                    <div className="mt-4 flex flex-wrap gap-2">
-                                        <Button
-                                            type="button"
-                                            asChild
-                                            className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
-                                        >
-                                            <Link
-                                                href={route('bookings.create', { service_id: service.id })}
-                                                onClick={() => handleReserve(service)}
-                                            >
-                                                Reservar ahora
-                                            </Link>
-                                        </Button>
-                                        <Button type="button" variant="outline" className="rounded-full border-slate-200 dark:border-white/10" onClick={() => setSelectedService(service)}>
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                    <Button
+                                        type="button"
+                                        asChild
+                                        className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                                    >
+                                        <Link href={route('bookings.create', { service_id: service.id })}>
+                                            Reservar ahora
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        asChild
+                                        variant="outline"
+                                        className="rounded-full border-slate-200 dark:border-white/10"
+                                    >
+                                        <Link href={route('services.show', service.id)}>
                                             Ver detalles
-                                        </Button>
-                                        <Button type="button" variant="ghost" asChild className="rounded-full">
-                                            <Link href={route('reviews.demo')}>Ver reseñas</Link>
-                                        </Button>
-                                    </div>
+                                        </Link>
+                                    </Button>
+                                    <Button type="button" variant="ghost" asChild className="rounded-full">
+                                        <Link href={route('reviews.demo')}>Ver reseñas</Link>
+                                    </Button>
                                 </div>
-                            ))}
-                        </div>
-
-                        {filteredServices.length === 0 && (
-                            <div className="rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center dark:border-white/10 dark:bg-slate-900">
-                                <p className="text-sm text-slate-600 dark:text-slate-300">No encontramos servicios para ese filtro. Probá otra categoría o palabra clave.</p>
                             </div>
-                        )}
+                        ))}
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                            <p className="text-sm uppercase tracking-[0.3em] text-emerald-600">Detalle activo</p>
-                            <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
-                                {selectedService ? selectedService.title : 'Seleccioná un servicio'}
-                            </h2>
-                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                {selectedService
-                                    ? selectedService.description
-                                    : 'Elegí un servicio para ver su información y preparar el siguiente paso.'}
-                            </p>
-                            {selectedService && (
-                                <div className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                                    <p>• Categoría: {selectedService.category}</p>
-                                    <p>• Precio: {selectedService.price}</p>
-                                    <p>• Ubicación: {selectedService.location}</p>
-                                </div>
-                            )}
+                    {filteredServices.length === 0 && (
+                        <div className="rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center dark:border-white/10 dark:bg-slate-900">
+                            <p className="text-sm text-slate-600 dark:text-slate-300">No encontramos servicios para ese filtro. Probá otra categoría o palabra clave.</p>
                         </div>
-
-                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-amber-500" />
-                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Estado del flujo</h2>
-                            </div>
-                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                {bookingStatus || 'Aquí verás el estado de tus acciones cuando reserves o selecciones un servicio.'}
-                            </p>
-                            <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                                <p>La experiencia está pensada para que los botones y la información se vean claros, útiles y listos para extenderse con datos reales.</p>
-                            </div>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </AppLayout>
