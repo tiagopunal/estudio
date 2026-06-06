@@ -38,7 +38,7 @@ export default function Index({ reviews, mine, auth }: IndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={mine ? 'Mis reseñas' : 'Reseñas'} />
 
-            <div className="space-y-6">
+            <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold">{mine ? 'Mis reseñas' : 'Reseñas del Marketplace'}</h1>

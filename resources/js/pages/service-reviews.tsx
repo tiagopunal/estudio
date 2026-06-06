@@ -129,7 +129,7 @@ export default function ServiceReviewsPage({
     };
 
     return (
-        <div className="space-y-6">
+        <div className="max-w-2xl mx-auto space-y-6">
             {/* Encabezado */}
             <Heading
                 title="Reseñas y Calificaciones"

@@ -14,6 +14,7 @@ class BookingController extends Controller
     public function index()
     {
         $bookings = Booking::where('user_id', auth()->id())
+            ->where('status', '!=', 'cancelled')
             ->with('service.user')
             ->latest()
             ->get();
@@ -155,6 +156,11 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => $newStatus]);
+
+        if ($newStatus === 'cancelled') {
+            return redirect()->route('bookings.index')
+                ->with('success', 'Reserva cancelada correctamente');
+        }
 
         return redirect()->route('bookings.show', $booking)
             ->with('success', 'Estado actualizado correctamente');

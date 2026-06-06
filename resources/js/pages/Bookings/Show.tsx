@@ -78,7 +78,9 @@ export default function BookingsShow({ booking }: Props) {
     const handleStatusChange = (newStatus: string) => {
         if (newStatus !== data.status) {
             setData('status', newStatus);
-            patch(`/bookings/${booking.id}/status`);
+            patch(route('bookings.updateStatus', booking.id), {
+                preserveScroll: true,
+            });
         }
     };
 

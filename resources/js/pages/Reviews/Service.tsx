@@ -32,12 +32,15 @@ export default function ServicePage({ service, reviews, average_rating, currentB
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Reseñas de ${service.title}`} />
 
-            <div className="space-y-6">
+            <div className="max-w-2xl mx-auto space-y-6">
                 <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-2xl font-semibold">{service.title}</h1>
                             <p className="text-sm text-slate-500">{service.description}</p>
+                            {service.user?.profile?.description && (
+                                <p className="mt-2 text-sm text-slate-600">Vendedor: <span className="font-medium">{service.user.name}</span> — {service.user.profile.description}</p>
+                            )}
                         </div>
                         <div className="flex items-center gap-3 rounded-full bg-slate-50 px-4 py-2 text-sm text-slate-700">
                             <span className="font-semibold">{average_rating?.toFixed(1) ?? '0.0'}</span>

@@ -66,7 +66,7 @@ export default function ServicesBrowse({ services, filters }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Buscar Servicios" />
 
-            <div className="space-y-6">
+            <div className="max-w-3xl mx-auto space-y-6">
                 <h1 className="text-3xl font-bold">Buscar Servicios</h1>
 
                 {/* Filtros */}

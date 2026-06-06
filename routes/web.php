@@ -19,6 +19,7 @@ Route::get('reviews-demo', function () {
 })->name('reviews.demo');
 
 // Rutas públicas de servicios
+Route::get('services/browse', [ServiceController::class, 'search'])->name('services.browse');
 Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
 Route::middleware(['auth'])->group(function () {
@@ -26,6 +27,8 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
     
+    Route::patch('bookings/{booking}/status', [BookingController::class, 'updateStatus'])
+        ->name('bookings.updateStatus');
     Route::resource('bookings', BookingController::class);
     Route::resource('services', ServiceController::class)->except(['show']);
     Route::resource('reviews', ReviewController::class);
