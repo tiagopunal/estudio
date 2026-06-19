@@ -17,6 +17,16 @@ class Service extends Model
         'average_rating'
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
+            'average_rating' => 'float',
+        ];
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
