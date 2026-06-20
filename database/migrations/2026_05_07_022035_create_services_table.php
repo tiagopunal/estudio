@@ -6,16 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('services', function (Blueprint $table) {
 
             $table->id();
 
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')
+                ->constrained()
+                ->onDelete('cascade');
 
             $table->string('title');
 
@@ -25,21 +24,31 @@ return new class extends Migration
 
             $table->string('category');
 
-            $table->decimal('latitude', 10, 7);
+            $table->string('location')->nullable();
 
-            $table->decimal('longitude', 10, 7);
+            $table->decimal('latitude', 10, 7)
+                ->nullable();
 
-            $table->float('average_rating')->default(0);
+            $table->decimal('longitude', 10, 7)
+                ->nullable();
+
+            
+            $table->decimal('average_rating', 3, 2)
+                ->default(0);
+
+            $table->integer('total_reviews')
+                ->default(0);
+
+        
+            $table->enum('status', ['active', 'paused'])
+                ->default('active');
 
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('services');
     }
-}; 
+};
