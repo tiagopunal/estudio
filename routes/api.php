@@ -1,68 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Support\ApiResponse;
 
 /*
 |--------------------------------------------------------------------------
-| API GLOBAL STRUCTURE
+| API ROUTES
 |--------------------------------------------------------------------------
-| Organización oficial del backend del equipo
-*/
-
-/*
-|--------------------------------------------------------------------------
-| AUTH
-|--------------------------------------------------------------------------
-*/
-Route::prefix('auth')->group(function () {
-    // Thiago Alonso
-});
-
-/*
-|--------------------------------------------------------------------------
-| PROFILE
-|--------------------------------------------------------------------------
-*/
-Route::prefix('profile')->group(function () {
-    // Thiago Alonso
-});
-
-/*
-|--------------------------------------------------------------------------
-| SERVICES
-|--------------------------------------------------------------------------
-*/
-Route::prefix('services')->group(function () {
-    // Rodrigo Lopez
-});
-
-/*
-|--------------------------------------------------------------------------
-| BOOKINGS
-|--------------------------------------------------------------------------
-*/
-Route::prefix('bookings')->group(function () {
-    // Tati
-});
-
-/*
-|--------------------------------------------------------------------------
-| REVIEWS
-|--------------------------------------------------------------------------
-*/
-Route::prefix('reviews')->group(function () {
-    // Tiago
-});
-
-/*
-|--------------------------------------------------------------------------
-| TEST GLOBAL (NO TOCAR)
-|--------------------------------------------------------------------------
+| The frontend is served through Inertia. This keeps a small health endpoint
+| available for validation while avoiding duplicate API definitions.
 */
 Route::get('/test', function () {
-    return ApiResponse::success(
-        null,
-        "API funcionando correctamente"
-    );
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'API funcionando correctamente',
+    ]);
 });

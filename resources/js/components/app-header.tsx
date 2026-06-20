@@ -11,7 +11,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, Compass, Folder, LayoutGrid, Menu, Search, Star } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -20,6 +20,16 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         url: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Marketplace',
+        url: '/marketplace',
+        icon: Compass,
+    },
+    {
+        title: 'Reseñas',
+        url: '/reviews-demo',
+        icon: Star,
     },
 ];
 
