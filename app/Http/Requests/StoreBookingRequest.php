@@ -14,6 +14,15 @@ class StoreBookingRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('date')) {
+            $this->merge([
+                'date' => str_replace('T', ' ', $this->input('date')),
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      */

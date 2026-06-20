@@ -57,15 +57,17 @@ export default function ServicesShow({ service, isOwner }: Props) {
             <Head title={service.title} />
 
             <div className="max-w-2xl mx-auto space-y-6">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">{service.title}</h1>
                         <Badge className="mt-2">{service.category}</Badge>
+                        <p className="mt-3 text-sm text-slate-500 line-clamp-3">{service.description}</p>
                     </div>
+
                     {isOwner && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Link href={`/services/${service.id}/edit`}>
-                                <Button size="sm">
+                                <Button size="sm" variant="outline">
                                     <Edit size={16} />
                                     Editar
                                 </Button>
@@ -82,29 +84,28 @@ export default function ServicesShow({ service, isOwner }: Props) {
                     )}
                 </div>
 
-                {/* Información principal */}
                 <Card className="p-6">
-                    <div className="space-y-4">
-                        <div>
-                            <h2 className="text-lg font-semibold mb-2">Descripción</h2>
-                            <p className="text-gray-700">{service.description}</p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-6">
+                        <div className="grid gap-4 md:grid-cols-2">
                             <div>
-                                <span className="font-semibold">Precio:</span>
+                                <h2 className="text-lg font-semibold mb-2">Precio</h2>
                                 <p className="text-2xl font-bold text-green-600">
                                     ${service.price.toFixed(2)}
                                 </p>
                             </div>
                             <div>
-                                <span className="font-semibold">Profesional:</span>
-                                <p className="text-lg">{service.user.name}</p>
+                                <h2 className="text-lg font-semibold mb-2">Profesional</h2>
+                                <p className="text-lg font-medium">{service.user.name}</p>
+                                {service.user?.profile?.description && (
+                                    <p className="mt-2 text-sm text-slate-600">
+                                        {service.user.profile.description}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
                         {(service.latitude || service.longitude) && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 text-sm text-slate-600">
                                 <MapPin size={18} />
                                 <span>
                                     {service.latitude}, {service.longitude}
@@ -174,16 +175,24 @@ export default function ServicesShow({ service, isOwner }: Props) {
                 </Card>
 
                 {/* Acciones */}
-                <div className="flex gap-4">
+                <div className="grid gap-3 sm:grid-cols-2">
                     <a href="/services" className="flex-1">
                         <Button variant="outline" className="w-full">
                             Volver
                         </Button>
                     </a>
-                    {!isOwner && (
+                    {!isOwner ? (
                         <Link href="/bookings/create" className="flex-1">
                             <Button className="w-full">Hacer Reserva</Button>
                         </Link>
+                    ) : (
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                            <Link href={`/reviews/service/${service.id}`} className="w-full">
+                                <Button variant="secondary" className="w-full">
+                                    Ver reseñas ({service.reviews.length})
+                                </Button>
+                            </Link>
+                        </div>
                     )}
                 </div>
             </div>

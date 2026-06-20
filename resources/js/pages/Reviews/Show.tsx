@@ -1,79 +1,90 @@
-import { Head } from '@inertiajs/react';
+﻿import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { type BreadcrumbItem } from '@/types';
-import { Star } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { type BreadcrumbItem, Review, User } from '@/types';
 
-interface Review {
-    id: number;
-    rating: number;
-    comment: string;
-    created_at: string;
-    user: {
-        id: number;
-        name: string;
-    };
-    service: {
-        id: number;
-        title: string;
-    };
-}
-
-interface Props {
+interface ShowProps {
     review: Review;
+    auth?: {
+        user?: User;
+    };
 }
 
-export default function ReviewsShow({ review }: Props) {
+export default function Show({ review, auth }: ShowProps) {
+    const page = usePage();
+    const flash = page.props.flash as { success?: string; error?: string } | undefined;
+    const isOwner = auth?.user?.id === review.user_id;
+
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Reseña', href: `/reviews/${review.id}` },
+        { title: 'Reseñas', href: '/reviews' },
+        { title: `Reseña #${review.id}`, href: `/reviews/${review.id}` },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Reseña" />
+            <Head title={`Reseña #${review.id}`} />
 
-            <div className="max-w-2xl mx-auto">
-                <Card className="p-6">
-                    <div className="space-y-4">
+            <div className="space-y-6">
+                {flash?.success && (
+                    <Alert>
+                        <AlertDescription>{flash.success}</AlertDescription>
+                    </Alert>
+                )}
+                {flash?.error && (
+                    <Alert variant="destructive">
+                        <AlertDescription>{flash.error}</AlertDescription>
+                    </Alert>
+                )}
+
+                <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold">{review.service.title}</h1>
-                            <p className="text-gray-600">por {review.user.name}</p>
+                            <h1 className="text-2xl font-semibold">Reseña de {review.service?.title}</h1>
+                            <p className="text-sm text-gray-500">
+                                Publicada por {review.user?.name}
+                            </p>
+                        </div>
+                        {isOwner && (
+                            <Link href={route('reviews.edit', review.id)}>
+                                <Button>Editar reseña</Button>
+                            </Link>
+                        )}
+                    </div>
+
+                    <div className="mt-4 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">Calificación: {review.rating}/5</div>
+                            <span className="text-sm text-slate-500">Reserva #{review.booking?.id}</span>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            {[...Array(5)].map((_, i) => (
-                                <Star
-                                    key={i}
-                                    size={24}
-                                    className={
-                                        i < review.rating
-                                            ? 'fill-yellow-400 text-yellow-400'
-                                            : 'text-gray-300'
-                                    }
-                                />
-                            ))}
-                            <span className="ml-2 text-lg font-semibold">{review.rating}/5</span>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            {review.service && (
+                                <div className="rounded-lg border border-slate-200 p-4">
+                                    <h2 className="font-semibold">Servicio</h2>
+                                    <p className="text-sm text-slate-600">{review.service.title}</p>
+                                </div>
+                            )}
+                            {review.booking && (
+                                <div className="rounded-lg border border-slate-200 p-4">
+                                    <h2 className="font-semibold">Reserva</h2>
+                                    <p className="text-sm text-slate-600">Fecha: {review.booking.date}</p>
+                                    <p className="text-sm text-slate-500">Estado: {review.booking.status}</p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="border-t pt-4">
-                            <p className="text-gray-700">{review.comment}</p>
+                            <p className="text-base leading-7 text-slate-700">{review.comment ?? 'Sin comentario adicional.'}</p>
                         </div>
 
-                        <p className="text-sm text-gray-500">
-                            Publicado el {new Date(review.created_at).toLocaleDateString()}
-                        </p>
+                        <div className="mt-4">
+                            <p className="text-sm text-gray-500">
+                                Publicado el {new Date(review.created_at).toLocaleDateString()}
+                            </p>
+                        </div>
                     </div>
-
-                    <div className="mt-6 flex gap-4">
-                        <a href="/bookings" className="flex-1">
-                            <Button variant="outline" className="w-full">
-                                Volver
-                            </Button>
-                        </a>
-                    </div>
-                </Card>
+                </div>
             </div>
         </AppLayout>
     );

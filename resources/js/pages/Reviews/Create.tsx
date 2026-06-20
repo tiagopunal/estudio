@@ -1,110 +1,137 @@
-import { Head, useForm } from '@inertiajs/react';
+﻿import { FormEventHandler } from 'react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { Booking, BreadcrumbItem, User } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { type BreadcrumbItem } from '@/types';
-import { Star, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import InputError from '@/components/input-error';
 
-interface Booking {
-    id: number;
-    service: {
-        id: number;
-        title: string;
+interface CreateProps {
+    bookings?: Booking[];
+    booking?: Booking;
+    selectedServiceId?: number;
+    auth?: {
+        user?: User;
     };
 }
 
-interface Props {
-    booking: Booking;
-}
+export default function Create({ bookings = [], booking, selectedServiceId }: CreateProps) {
+    const page = usePage();
+    const flash = page.props.flash as { success?: string; error?: string } | undefined;
 
-export default function ReviewsCreate({ booking }: Props) {
+    const defaultBookingId = booking
+        ? booking.id
+        : bookings.find((item) => item.service?.id === selectedServiceId)?.id ?? bookings[0]?.id;
+
     const { data, setData, post, processing, errors } = useForm({
-        rating: 5,
+        booking_id: defaultBookingId,
+        rating: 0,
         comment: '',
     });
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Mis Reservas', href: '/bookings' },
-        { title: `Reseña - ${booking.service.title}`, href: `/bookings/${booking.id}/reviews/create` },
-    ];
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post(`/bookings/${booking.id}/reviews`);
+    const submit: FormEventHandler = (event) => {
+        event.preventDefault();
+        post(route('reviews.store'));
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Nueva Reseña" />
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Reseñas', href: '/reviews' },
+                { title: 'Crear', href: booking ? `/bookings/${booking.id}/reviews/create` : '/reviews/create' },
+            ]}
+        >
+            <Head title="Crear reseña" />
 
-            <div className="max-w-2xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">
-                    Reseña de: {booking.service.title}
-                </h1>
+            <div className="space-y-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold">Crear reseña</h1>
+                        <p className="text-sm text-gray-500">
+                            Selecciona una reserva completada y califica tu experiencia.
+                        </p>
+                    </div>
+                    <Link
+                        href={route('reviews.index')}
+                        className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                        Volver a reseñas
+                    </Link>
+                </div>
 
-                <Card className="p-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Calificación */}
-                        <div>
-                            <Label>Calificación</Label>
-                            <div className="flex gap-2 mt-3">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        onClick={() => setData('rating', star)}
-                                        className="focus:outline-none transition"
-                                    >
-                                        <Star
-                                            size={32}
-                                            className={
-                                                star <= data.rating
-                                                    ? 'fill-yellow-400 text-yellow-400'
-                                                    : 'text-gray-300'
-                                            }
-                                        />
-                                    </button>
-                                ))}
+                {flash?.error && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{flash.error}</AlertDescription>
+                    </Alert>
+                )}
+
+                <form onSubmit={submit} className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    {booking ? (
+                        <div className="space-y-4">
+                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                <p className="text-sm text-slate-500">Reserva #{booking.id}</p>
+                                <p className="text-lg font-semibold">Servicio: {booking.service?.title}</p>
                             </div>
-                            <p className="mt-2 text-sm text-gray-600">
-                                {data.rating} de 5 estrellas
-                            </p>
+                            <input type="hidden" name="booking_id" value={booking.id} />
                         </div>
-
-                        {/* Comentario */}
+                    ) : bookings.length > 0 ? (
                         <div>
-                            <Label htmlFor="comment">Tu comentario</Label>
-                            <textarea
-                                id="comment"
-                                value={data.comment}
-                                onChange={(e) => setData('comment', e.target.value)}
-                                placeholder="Cuéntanos tu experiencia con este servicio..."
-                                rows={6}
-                                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            {errors.comment && (
-                                <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
-                                    <AlertCircle size={16} />
-                                    {errors.comment}
-                                </div>
-                            )}
+                            <Label htmlFor="booking_id">Reserva</Label>
+                            <select
+                                id="booking_id"
+                                value={data.booking_id}
+                                onChange={(event) => setData('booking_id', Number(event.target.value))}
+                                className="mt-2 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+                            >
+                                {bookings.map((bookingItem) => (
+                                    <option key={bookingItem.id} value={bookingItem.id}>
+                                        Reserva #{bookingItem.id} • servicio: {bookingItem.service?.title}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors.booking_id} />
                         </div>
+                    ) : (
+                        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800">
+                            No tienes reservas completadas disponibles para reseñar. Completa una reserva primero y vuelve luego.
+                        </div>
+                    )}
 
-                        {/* Botones */}
-                        <div className="flex gap-4 pt-4">
-                            <Button type="submit" disabled={processing} className="flex-1">
-                                {processing ? 'Publicando...' : 'Publicar Reseña'}
-                            </Button>
-                            <a href={`/bookings/${booking.id}`}>
-                                <Button type="button" variant="outline">
-                                    Cancelar
-                                </Button>
-                            </a>
-                        </div>
-                    </form>
-                </Card>
+                    <div>
+                        <Label htmlFor="rating">Calificación</Label>
+                        <Input
+                            id="rating"
+                            type="number"
+                            min={1}
+                            max={5}
+                            value={data.rating}
+                            onChange={(event) => setData('rating', Number(event.target.value))}
+                            placeholder="1 a 5"
+                        />
+                        <InputError message={errors.rating} />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="comment">Comentario</Label>
+                        <Textarea
+                            id="comment"
+                            value={data.comment}
+                            onChange={(event) => setData('comment', event.target.value)}
+                            placeholder="Cuenta cómo fue tu experiencia"
+                            rows={5}
+                        />
+                        <InputError message={errors.comment} />
+                    </div>
+
+                    <Button type="submit" disabled={processing}>
+                        {processing ? 'Guardando...' : 'Crear reseña'}
+                    </Button>
+                </form>
             </div>
         </AppLayout>
     );
