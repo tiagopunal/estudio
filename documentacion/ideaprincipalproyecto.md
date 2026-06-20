@@ -263,13 +263,6 @@ Será responsable del desarrollo completo del módulo de reservas.
 - Integración con sistema de reseñas.  
 
 ---
-## Funcionalidades generales
-- Registro e inicio de sesión
-- Creación de perfiles (cliente/profesional)
-- Publicación de servicios
-- Búsqueda de servicios por ubicación
-- Reservas de servicios
-- Sistema de calificaciones y reseñas
 
 ### Tiago — Sistema de Reseñas y Calificaciones
 
