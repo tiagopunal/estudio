@@ -32,11 +32,12 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    role: 'client' | 'professional';
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    [key: string]: unknown;
 }
 
 export interface Review {
@@ -55,7 +56,7 @@ export interface Review {
 
 export interface Service {
     id: number;
-    user_id: number;
+    user_id?: number;
     title: string;
     description: string;
     price: number;
@@ -63,8 +64,11 @@ export interface Service {
     latitude: number;
     longitude: number;
     average_rating: number;
-    created_at: string;
-    updated_at: string;
+    created_at?: string;
+    updated_at?: string;
+    professional?: Pick<User, 'id' | 'name' | 'email'>;
+    can_update?: boolean;
+    can_delete?: boolean;
     [key: string]: unknown;
 }
 

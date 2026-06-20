@@ -2,14 +2,15 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
 use App\Models\Booking;
-use App\Models\Service;
 use App\Models\Review;
+use App\Models\Service;
 use App\Policies\BookingPolicy;
-use App\Policies\ServicePolicy;
 use App\Policies\ReviewPolicy;
+use App\Policies\ServicePolicy;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,20 +27,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Usar Bootstrap para pagination
         Paginator::useBootstrapFive();
 
-        // Registrar Policies
-        $this->registerPolicies();
-    }
-
-    /**
-     * Registrar Policies para autorización
-     */
-    protected function registerPolicies(): void
-    {
-        \Gate::policy(Booking::class, BookingPolicy::class);
-        \Gate::policy(Service::class, ServicePolicy::class);
-        \Gate::policy(Review::class, ReviewPolicy::class);
+        Gate::policy(Booking::class, BookingPolicy::class);
+        Gate::policy(Service::class, ServicePolicy::class);
+        Gate::policy(Review::class, ReviewPolicy::class);
     }
 }
