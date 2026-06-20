@@ -15,15 +15,35 @@ return new class extends Migration
 
             $table->id();
 
-            $table->unsignedBigInteger('user_id');
+            // relación con usuario
+            $table->foreignId('user_id')
+                ->constrained()
+                ->onDelete('cascade');
 
-            $table->text('description')->nullable();
+            // información básica
+            $table->string('full_name');
 
-            $table->string('phone')->nullable();
+            $table->text('description')
+                ->nullable();
 
-            $table->string('location')->nullable();
+            $table->string('phone')
+                ->nullable();
 
-            $table->string('avatar')->nullable();
+            $table->string('location')
+                ->nullable();
+
+            $table->string('avatar')
+                ->nullable();
+
+            // información profesional
+            $table->string('profession')
+                ->nullable();
+
+            $table->integer('experience_years')
+                ->default(0);
+
+            $table->text('skills')
+                ->nullable();
 
             $table->timestamps();
         });

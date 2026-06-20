@@ -12,21 +12,32 @@ class Service extends Model
         'description',
         'price',
         'category',
+
+        'location',
         'latitude',
         'longitude',
-        'average_rating'
+
+       
+        'average_rating',
+        'total_reviews',
+
+       
+        'status'
     ];
 
+    
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
 
+    
     public function reviews()
     {
         return $this->hasMany(Review::class);

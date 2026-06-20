@@ -8,10 +8,14 @@ class Profile extends Model
 {
     protected $fillable = [
         'user_id',
+        'full_name',
         'description',
         'phone',
         'location',
-        'avatar'
+        'avatar',
+        'profession',
+        'experience_years',
+        'skills'
     ];
 
     public function user()
