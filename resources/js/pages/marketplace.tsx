@@ -81,20 +81,17 @@ export default function Marketplace() {
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl space-y-3">
                             <p className="text-sm uppercase tracking-[0.3em] text-emerald-100">Marketplace local</p>
-                            <h1 className="text-3xl font-semibold sm:text-4xl">Encuentra, compara y reserva servicios cerca tuyo con un diseño más claro y moderno.</h1>
+                            <h1 className="text-3xl font-semibold sm:text-4xl">Encuentra servicios locales y reserva en minutos.</h1>
                             <p className="text-sm leading-6 text-slate-100/90">
-                                Filtra por categoría, revisa detalle y prepara tu próxima reserva sin salir de esta pantalla.
+                                Filtra por categoría, revisa los detalles y reserva lo que necesites desde una sola vista.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
                             <Button asChild className="rounded-full bg-emerald-300 text-slate-950 hover:bg-emerald-200">
                                 <Link href={route('dashboard')}>
-                                    Volver al dashboard
+                                    Volver al panel
                                     <ArrowRight className="h-4 w-4" />
                                 </Link>
-                            </Button>
-                            <Button asChild variant="outline" className="rounded-full border-white/70 text-white hover:bg-white/10">
-                                <Link href={route('reviews.demo')}>Ver reseñas</Link>
                             </Button>
                         </div>
                     </div>

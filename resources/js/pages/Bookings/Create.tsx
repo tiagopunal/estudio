@@ -50,9 +50,9 @@ export default function BookingsCreate({ services }: Props) {
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl space-y-3">
                             <p className="text-sm uppercase tracking-[0.3em] text-emerald-100">Reserva tu próximo servicio</p>
-                            <h1 className="text-3xl font-semibold sm:text-4xl">Nueva reserva con el mismo estilo visual del marketplace.</h1>
+                            <h1 className="text-3xl font-semibold sm:text-4xl">Reserva de forma simple y rápida.</h1>
                             <p className="text-sm leading-6 text-slate-100/90">
-                                Seleccioná el servicio, elegí la fecha y enviá tu reserva desde una pantalla limpia y consistente.
+                                Elegí el servicio, define la fecha y hora y envía tu reserva desde una vista clara y directa.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
@@ -91,7 +91,7 @@ export default function BookingsCreate({ services }: Props) {
                                     onChange={(e) => setData('service_id', e.target.value)}
                                     className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 dark:border-white/10 dark:bg-slate-950"
                                 >
-                                    <option value="">Selecciona un servicio...</option>
+                                    <option value="">Selecciona un servicio</option>
                                     {services.map((service) => (
                                         <option key={service.id} value={service.id}>
                                             {service.title} - ${service.price.toFixed(2)} ({service.user.name})
@@ -108,7 +108,7 @@ export default function BookingsCreate({ services }: Props) {
 
                             <div>
                                 <Label htmlFor="date" className="text-sm font-semibold text-slate-900 dark:text-white">
-                                    Fecha y Hora
+                                    Fecha y hora
                                 </Label>
                                 <Input
                                     id="date"
@@ -117,6 +117,9 @@ export default function BookingsCreate({ services }: Props) {
                                     onChange={(e) => setData('date', e.target.value)}
                                     className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-950"
                                 />
+                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                    Elige la fecha y la hora en que quieres recibir el servicio.
+                                </p>
                                 {errors.date && (
                                     <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
                                         <AlertCircle size={16} />
@@ -131,7 +134,7 @@ export default function BookingsCreate({ services }: Props) {
                                     disabled={processing}
                                     className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
                                 >
-                                    {processing ? 'Guardando...' : 'Crear Reserva'}
+                                    {processing ? 'Guardando...' : 'Crear reserva'}
                                 </Button>
                                 <Button asChild type="button" variant="outline" className="rounded-full border-slate-200 dark:border-white/10">
                                     <Link href={route('bookings.index')}>Cancelar</Link>
@@ -170,18 +173,6 @@ export default function BookingsCreate({ services }: Props) {
                             )}
                         </div>
 
-                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-amber-500" />
-                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Estado del flujo</h2>
-                            </div>
-                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                Cuando completes el formulario, la reserva se guardará y podrás verla en tu lista de reservas.
-                            </p>
-                            <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                                <p>La pantalla quedó alineada con el estilo visual del marketplace para que el cambio entre páginas se sienta natural.</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

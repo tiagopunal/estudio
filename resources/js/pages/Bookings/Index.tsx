@@ -70,9 +70,9 @@ export default function BookingsIndex({ bookings }: Props) {
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl space-y-3">
                             <p className="text-sm uppercase tracking-[0.3em] text-emerald-100">Tus reservas</p>
-                            <h1 className="text-3xl font-semibold sm:text-4xl">Gestioná tus reservas con el mismo tono visual del marketplace.</h1>
+                            <h1 className="text-3xl font-semibold sm:text-4xl">Gestiona tus reservas desde una vista simple.</h1>
                             <p className="text-sm leading-6 text-slate-100/90">
-                                Revisá el estado de cada servicio, accedé al detalle y seguí el flujo sin salir de una experiencia consistente.
+                                Revisa cada reserva, consulta los detalles y accede rápidamente a la información que necesitas.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
