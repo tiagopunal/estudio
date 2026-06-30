@@ -1,17 +1,17 @@
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
-
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import { Head, useForm } from '@inertiajs/react';
+import { LoaderCircle } from 'lucide-react';
+import { FormEventHandler } from 'react';
 
 interface RegisterForm {
     name: string;
     email: string;
+    role: 'client' | 'professional';
     password: string;
     password_confirmation: string;
 }
@@ -20,6 +20,7 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm<RegisterForm>({
         name: '',
         email: '',
+        role: 'client',
         password: '',
         password_confirmation: '',
     });
@@ -37,7 +38,9 @@ export default function Register() {
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name" className="text-slate-200">Nombre completo</Label>
+                        <Label htmlFor="name" className="text-slate-200">
+                            Nombre completo
+                        </Label>
                         <Input
                             id="name"
                             type="text"
@@ -55,7 +58,9 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-slate-200">Correo electrónico</Label>
+                        <Label htmlFor="email" className="text-slate-200">
+                            Correo electrónico
+                        </Label>
                         <Input
                             id="email"
                             type="email"
@@ -72,12 +77,33 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password" className="text-slate-200">Contraseña</Label>
+                        <Label htmlFor="role" className="text-slate-200">
+                            Tipo de cuenta
+                        </Label>
+                        <select
+                            id="role"
+                            required
+                            tabIndex={3}
+                            value={data.role}
+                            onChange={(e) => setData('role', e.target.value as RegisterForm['role'])}
+                            disabled={processing}
+                            className="border-slate-600/50 bg-slate-900/50 text-white placeholder:text-slate-500 focus:border-cyan-400/50 focus:ring-cyan-400/20 flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                            <option value="client">Cliente</option>
+                            <option value="professional">Profesional</option>
+                        </select>
+                        <InputError message={errors.role} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="password" className="text-slate-200">
+                            Contraseña
+                        </Label>
                         <Input
                             id="password"
                             type="password"
                             required
-                            tabIndex={3}
+                            tabIndex={4}
                             autoComplete="new-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
@@ -89,12 +115,14 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation" className="text-slate-200">Confirma tu contraseña</Label>
+                        <Label htmlFor="password_confirmation" className="text-slate-200">
+                            Confirma tu contraseña
+                        </Label>
                         <Input
                             id="password_confirmation"
                             type="password"
                             required
-                            tabIndex={4}
+                            tabIndex={5}
                             autoComplete="new-password"
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
@@ -105,12 +133,7 @@ export default function Register() {
                         <InputError message={errors.password_confirmation} />
                     </div>
 
-                    <Button 
-                        type="submit" 
-                        className="mt-2 w-full bg-cyan-300 text-slate-950 hover:bg-cyan-200 font-semibold rounded-full py-2.5" 
-                        tabIndex={5} 
-                        disabled={processing}
-                    >
+                    <Button type="submit" className="mt-2 w-full bg-cyan-300 text-slate-950 hover:bg-cyan-200 font-semibold rounded-full py-2.5" tabIndex={6} disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                         Crear cuenta
                     </Button>
@@ -118,7 +141,7 @@ export default function Register() {
 
                 <div className="text-slate-300 text-center text-sm">
                     ¿Ya tienes cuenta?{' '}
-                    <TextLink href={route('login')} tabIndex={6} className="text-cyan-300 hover:text-cyan-200 font-medium">
+                    <TextLink href={route('login')} tabIndex={7} className="text-cyan-300 hover:text-cyan-200 font-medium">
                         Inicia sesión
                     </TextLink>
                 </div>

@@ -2,170 +2,138 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Services\StoreServiceRequest;
+use App\Http\Requests\Services\UpdateServiceRequest;
 use App\Models\Service;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ServiceController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | LISTAR SERVICIOS DEL USUARIO AUTENTICADO
-    |--------------------------------------------------------------------------
-    */
-    public function index()
+    public function index(Request $request): Response
     {
-        $services = Service::where('user_id', auth()->id())
-            ->with('reviews', 'bookings')
-            ->latest()
-            ->get();
+        Gate::authorize('viewAny', Service::class);
 
-        return Inertia::render('Services/Index', [
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:255'],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => ['nullable', 'numeric', 'min:0'],
+            'sort' => ['nullable', 'in:latest,price_asc,price_desc,rating_desc'],
+        ]);
+
+        $services = Service::query()
+            ->with('user:id,name,email')
+            ->when($filters['search'] ?? null, function ($query, string $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('category', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($query) => $query->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->when($filters['category'] ?? null, fn ($query, string $category) => $query->where('category', $category))
+            ->when($filters['min_price'] ?? null, fn ($query, $price) => $query->where('price', '>=', $price))
+            ->when($filters['max_price'] ?? null, fn ($query, $price) => $query->where('price', '<=', $price))
+            ->when(($filters['sort'] ?? 'latest') === 'price_asc', fn ($query) => $query->orderBy('price'))
+            ->when(($filters['sort'] ?? 'latest') === 'price_desc', fn ($query) => $query->orderByDesc('price'))
+            ->when(($filters['sort'] ?? 'latest') === 'rating_desc', fn ($query) => $query->orderByDesc('average_rating'))
+            ->when(($filters['sort'] ?? 'latest') === 'latest', fn ($query) => $query->latest())
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn (Service $service) => $this->serializeService($service, $request));
+
+        return Inertia::render('services/index', [
             'services' => $services,
+            'filters' => [
+                'search' => $filters['search'] ?? '',
+                'category' => $filters['category'] ?? '',
+                'min_price' => $filters['min_price'] ?? '',
+                'max_price' => $filters['max_price'] ?? '',
+                'sort' => $filters['sort'] ?? 'latest',
+            ],
+            'categories' => Service::query()->distinct()->orderBy('category')->pluck('category'),
+            'canCreate' => $request->user()->can('create', Service::class),
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR FORMULARIO DE CREAR SERVICIO
-    |--------------------------------------------------------------------------
-    */
-    public function create()
+    public function create(): Response
     {
-        return Inertia::render('Services/Create');
+        Gate::authorize('create', Service::class);
+
+        return Inertia::render('services/create');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | GUARDAR NUEVO SERVICIO
-    |--------------------------------------------------------------------------
-    */
-    public function store(Request $request)
+    public function store(StoreServiceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
-            'price' => 'required|numeric|min:0.01',
-            'category' => 'required|string|max:50',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-        ]);
+        $service = $request->user()->services()->create($request->validated());
 
-        $service = Service::create([
-            'user_id' => auth()->id(),
-            ...$validated
-        ]);
-
-        return redirect()->route('services.show', $service)
-            ->with('success', 'Servicio creado correctamente');
+        return to_route('services.show', $service)->with('success', 'Servicio creado correctamente.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR DETALLE DEL SERVICIO
-    |--------------------------------------------------------------------------
-    */
-    public function show(Service $service)
+    public function show(Request $request, Service $service): Response
     {
-        $service->load('user.profile', 'reviews.user', 'bookings');
+        Gate::authorize('view', $service);
 
-        return Inertia::render('Services/Show', [
-            'service' => $service,
-            'isOwner' => $service->user_id === auth()->id(),
+        $service->load('user:id,name,email');
+
+        return Inertia::render('services/show', [
+            'service' => $this->serializeService($service, $request),
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR FORMULARIO DE EDITAR SERVICIO
-    |--------------------------------------------------------------------------
-    */
-    public function edit(Service $service)
+    public function edit(Request $request, Service $service): Response
     {
-        $this->authorize('update', $service);
+        Gate::authorize('update', $service);
 
-        return Inertia::render('Services/Edit', [
-            'service' => $service,
+        $service->load('user:id,name,email');
+
+        return Inertia::render('services/edit', [
+            'service' => $this->serializeService($service, $request),
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACTUALIZAR SERVICIO
-    |--------------------------------------------------------------------------
-    */
-    public function update(Request $request, Service $service)
+    public function update(UpdateServiceRequest $request, Service $service): RedirectResponse
     {
-        $this->authorize('update', $service);
+        $service->update($request->validated());
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
-            'price' => 'required|numeric|min:0.01',
-            'category' => 'required|string|max:50',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-        ]);
-
-        $service->update($validated);
-
-        return redirect()->route('services.show', $service)
-            ->with('success', 'Servicio actualizado correctamente');
+        return to_route('services.show', $service)->with('success', 'Servicio actualizado correctamente.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ELIMINAR SERVICIO
-    |--------------------------------------------------------------------------
-    */
-    public function destroy(Service $service)
+    public function destroy(Request $request, Service $service): RedirectResponse
     {
-        $this->authorize('delete', $service);
+        Gate::authorize('delete', $service);
 
         $service->delete();
 
-        return redirect()->route('services.index')
-            ->with('success', 'Servicio eliminado correctamente');
+        return to_route('services.index')->with('success', 'Servicio eliminado correctamente.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | BUSCAR SERVICIOS PÚBLICOS
-    |--------------------------------------------------------------------------
-    */
-    public function search(Request $request)
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeService(Service $service, Request $request): array
     {
-        $query = Service::with('user.profile', 'reviews')
-            ->where('user_id', '!=', auth()->id());
-
-        // Filtrar por categoría
-        if ($request->has('category') && $request->category) {
-            $query->where('category', $request->category);
-        }
-
-        // Filtrar por búsqueda de texto
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        // Filtrar por precio
-        if ($request->has('min_price') && $request->min_price) {
-            $query->where('price', '>=', $request->min_price);
-        }
-
-        if ($request->has('max_price') && $request->max_price) {
-            $query->where('price', '<=', $request->max_price);
-        }
-
-        $services = $query->latest()->paginate(12);
-
-        return Inertia::render('Services/Browse', [
-            'services' => $services,
-            'filters' => $request->all(),
-        ]);
+        return [
+            'id' => $service->id,
+            'title' => $service->title,
+            'description' => $service->description,
+            'price' => (float) $service->price,
+            'category' => $service->category,
+            'latitude' => (float) $service->latitude,
+            'longitude' => (float) $service->longitude,
+            'average_rating' => (float) $service->average_rating,
+            'created_at' => $service->created_at?->toISOString(),
+            'professional' => [
+                'id' => $service->user->id,
+                'name' => $service->user->name,
+                'email' => $service->user->email,
+            ],
+            'can_update' => $request->user()->can('update', $service),
+            'can_delete' => $request->user()->can('delete', $service),
+        ];
     }
 }
