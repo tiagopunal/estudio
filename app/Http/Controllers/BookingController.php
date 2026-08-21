@@ -13,9 +13,12 @@ class BookingController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::where('user_id', auth()->id())
-            ->where('status', '!=', 'cancelled')
-            ->with('service.user')
+        $bookings = Booking::query()
+            ->where(function ($query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhereHas('service', fn ($serviceQuery) => $serviceQuery->where('user_id', auth()->id()));
+            })
+            ->with(['service.user', 'user'])
             ->latest()
             ->get();
 
@@ -81,6 +84,8 @@ class BookingController extends Controller
 
         return Inertia::render('Bookings/Show', [
             'booking' => $booking,
+            'canManageStatus' => auth()->id() === $booking->service->user_id,
+            'canCancel' => auth()->id() === $booking->user_id || auth()->id() === $booking->service->user_id,
         ]);
     }
 
@@ -136,11 +141,14 @@ class BookingController extends Controller
             return back()->withErrors(['status' => 'Una reserva cancelada no puede modificarse']);
         }
 
-        if (in_array($newStatus, ['confirmed', 'completed']) && $user->role !== 'professional') {
+        $isProvider = $user->id === $booking->service->user_id;
+        $isCustomer = $user->id === $booking->user_id;
+
+        if (in_array($newStatus, ['confirmed', 'completed'], true) && ! $isProvider) {
             return back()->withErrors(['status' => 'Solo el profesional puede confirmar o completar reservas']);
         }
 
-        if ($newStatus === 'cancelled' && $user->id !== $booking->user_id && $user->role !== 'professional') {
+        if ($newStatus === 'cancelled' && ! $isCustomer && ! $isProvider) {
             return back()->withErrors(['status' => 'No tienes permisos para cancelar esta reserva']);
         }
 

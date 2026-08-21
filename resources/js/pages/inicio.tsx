@@ -59,7 +59,7 @@ export default function Dashboard() {
                         <div className="max-w-2xl space-y-4">
                             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-cyan-100 backdrop-blur">
                                 <Sparkles className="h-4 w-4 text-cyan-200" />
-                                Bienvenido de nuevo, {auth.user.name}
+                                Bienvenido de nuevo, {auth.user?.name ?? 'visitante'}
                             </div>
                             <div className="space-y-3">
                                 <p className="text-sm uppercase tracking-[0.3em] text-cyan-200">Centro de control</p>

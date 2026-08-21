@@ -1,142 +1,65 @@
-import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
-import { Star, Mail, Phone, MapPin } from 'lucide-react';
-
-interface Profile {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    profile?: {
-        description?: string;
-        phone?: string;
-        location?: string;
-        avatar?: string;
-    };
-    services?: any[];
-    reviews?: any[];
-    _count?: {
-        services: number;
-        reviews: number;
-        bookings: number;
-    };
-}
+import AppLayout from '@/layouts/app-layout';
+import { type MarketplaceProfile, type Review, type Service, type User } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { BriefcaseBusiness, MapPin, Star } from 'lucide-react';
 
 interface Props {
-    profile: Profile;
+    profile: User & { profile?: MarketplaceProfile; services: Service[] };
+    receivedReviews: Review[];
 }
 
-export default function ProfilesShow({ profile }: Props) {
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Inicio', href: '/' },
-        { title: profile.name, href: `/profiles/${profile.id}` },
-    ];
+export default function ProfilesShow({ profile, receivedReviews }: Props) {
+    const details = profile.profile;
+    const average = receivedReviews.length
+        ? receivedReviews.reduce((sum, review) => sum + review.rating, 0) / receivedReviews.length
+        : 0;
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={profile.name} />
-
-            <div className="max-w-4xl mx-auto space-y-6">
-                {/* Información Personal */}
+        <AppLayout breadcrumbs={[{ title: 'Servicios', href: '/services/browse' }, { title: profile.name, href: `/profiles/${profile.id}` }]}>
+            <Head title={`Perfil de ${profile.name}`} />
+            <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
                 <Card className="p-6">
-                    <div className="grid md:grid-cols-3 gap-6 items-start">
-                        {/* Avatar */}
-                        <div className="flex flex-col items-center">
-                            {profile.profile?.avatar ? (
-                                <img
-                                    src={profile.profile.avatar}
-                                    alt={profile.name}
-                                    className="w-32 h-32 rounded-full object-cover mb-4"
-                                />
-                            ) : (
-                                <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center mb-4">
-                                    <span className="text-gray-600 text-2xl font-bold">
-                                        {profile.name.charAt(0)}
-                                    </span>
-                                </div>
-                            )}
-                            {profile.role === 'professional' && (
-                                <Badge className="bg-blue-100 text-blue-800">Profesional</Badge>
-                            )}
-                        </div>
-
-                        {/* Información */}
-                        <div className="md:col-span-2 space-y-4">
-                            <div>
-                                <h1 className="text-3xl font-bold">{profile.name}</h1>
+                    <div className="flex flex-col gap-6 md:flex-row">
+                        {details?.avatar ? (
+                            <img src={`/storage/${details.avatar}`} alt={profile.name} className="h-32 w-32 rounded-full object-cover" />
+                        ) : (
+                            <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-full bg-slate-200 text-4xl font-bold text-slate-600">
+                                {profile.name.charAt(0).toUpperCase()}
                             </div>
-
-                            {profile.profile?.description && (
-                                <div>
-                                    <p className="text-gray-700">{profile.profile.description}</p>
-                                </div>
-                            )}
-
-                            {/* Contacto */}
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Mail size={18} />
-                                    <span>{profile.email}</span>
-                                </div>
-                                {profile.profile?.phone && (
-                                    <div className="flex items-center gap-2">
-                                        <Phone size={18} />
-                                        <span>{profile.profile.phone}</span>
-                                    </div>
-                                )}
-                                {profile.profile?.location && (
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={18} />
-                                        <span>{profile.profile.location}</span>
-                                    </div>
-                                )}
+                        )}
+                        <div className="flex-1 space-y-3">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <h1 className="text-3xl font-bold">{details?.full_name || profile.name}</h1>
+                                <Badge variant={profile.role === 'professional' ? 'default' : 'secondary'}>
+                                    {profile.role === 'professional' ? 'Profesional verificado' : 'Cliente'}
+                                </Badge>
                             </div>
-
-                            {/* Estadísticas */}
-                            {profile._count && (
-                                <div className="grid grid-cols-3 gap-4 pt-4">
-                                    <Link href={`/profiles/${profile.id}/services`}>
-                                        <Card className="p-4 text-center hover:shadow-lg cursor-pointer">
-                                            <p className="text-2xl font-bold">
-                                                {profile._count.services}
-                                            </p>
-                                            <p className="text-sm text-gray-600">Servicios</p>
-                                        </Card>
-                                    </Link>
-                                    <Link href={`/profiles/${profile.id}/reviews`}>
-                                        <Card className="p-4 text-center hover:shadow-lg cursor-pointer">
-                                            <p className="text-2xl font-bold">
-                                                {profile._count.reviews}
-                                            </p>
-                                            <p className="text-sm text-gray-600">Reseñas</p>
-                                        </Card>
-                                    </Link>
-                                    <Card className="p-4 text-center">
-                                        <p className="text-2xl font-bold">{profile._count.bookings}</p>
-                                        <p className="text-sm text-gray-600">Reservas</p>
-                                    </Card>
-                                </div>
-                            )}
+                            {details?.profession && <p className="flex items-center gap-2 font-medium"><BriefcaseBusiness className="size-4" />{details.profession}</p>}
+                            {details?.location && <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="size-4" />{details.location}</p>}
+                            {details?.description && <p className="max-w-2xl leading-7 text-muted-foreground">{details.description}</p>}
+                            <div className="flex flex-wrap gap-4 text-sm">
+                                <span>{details?.experience_years ?? 0} años de experiencia</span>
+                                <span className="flex items-center gap-1"><Star className="size-4 fill-amber-400 text-amber-400" />{average.toFixed(1)} ({receivedReviews.length} reseñas)</span>
+                            </div>
+                            {details?.skills && <p><strong>Habilidades:</strong> {details.skills}</p>}
                         </div>
                     </div>
                 </Card>
 
-                {/* Acciones */}
-                <div className="flex gap-4">
-                    <a href="/" className="flex-1">
-                        <Button variant="outline" className="w-full">
-                            Volver
-                        </Button>
-                    </a>
-                    {profile.role === 'professional' && (
-                        <Link href={`/profiles/${profile.id}/services`} className="flex-1">
-                            <Button className="w-full">Ver Servicios</Button>
-                        </Link>
-                    )}
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card className="p-6">
+                        <h2 className="text-xl font-semibold">Servicios publicados</h2>
+                        <p className="mt-2 text-3xl font-bold">{profile.services.length}</p>
+                        <Button asChild variant="outline" className="mt-4"><Link href={route('profiles.services', profile.id)}>Ver servicios</Link></Button>
+                    </Card>
+                    <Card className="p-6">
+                        <h2 className="text-xl font-semibold">Reputación recibida</h2>
+                        <p className="mt-2 text-3xl font-bold">{receivedReviews.length} reseñas</p>
+                        <Button asChild variant="outline" className="mt-4"><Link href={route('profiles.reviews', profile.id)}>Ver reseñas</Link></Button>
+                    </Card>
                 </div>
             </div>
         </AppLayout>

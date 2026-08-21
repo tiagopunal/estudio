@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Profile;
-use App\Models\Service;
 use App\Models\Booking;
 use App\Models\Review;
+use App\Models\Service;
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -23,6 +22,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Seller User',
                 'password' => bcrypt('password'),
+                'role' => 'professional',
             ]
         );
 
@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Test User',
                 'password' => bcrypt('password'),
+                'role' => 'client',
             ]
         );
 
@@ -129,7 +130,10 @@ class DatabaseSeeder extends Seeder
             );
 
             $average = Review::where('service_id', $sample['service_id'])->average('rating') ?? 0;
-            Service::where('id', $sample['service_id'])->update(['average_rating' => $average]);
+            Service::where('id', $sample['service_id'])->update([
+                'average_rating' => $average,
+                'total_reviews' => Review::where('service_id', $sample['service_id'])->count(),
+            ]);
         }
     }
 }

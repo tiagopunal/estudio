@@ -32,6 +32,8 @@ class ServiceController extends Controller
     */
     public function create()
     {
+        $this->authorize('create', Service::class);
+
         return Inertia::render('Services/Create');
     }
 
@@ -42,6 +44,8 @@ class ServiceController extends Controller
     */
     public function store(Request $request)
     {
+        $this->authorize('create', Service::class);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:2000',
@@ -53,7 +57,7 @@ class ServiceController extends Controller
 
         $service = Service::create([
             'user_id' => auth()->id(),
-            ...$validated
+            ...$validated,
         ]);
 
         return redirect()->route('services.show', $service)

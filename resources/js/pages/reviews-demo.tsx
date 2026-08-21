@@ -1,7 +1,7 @@
 ﻿import { Button } from '@/components/ui/button';
 import ReviewCard from '@/components/review-card';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Review } from '@/types';
+import { type BreadcrumbItem, type Review, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, MessageSquareText, ShieldCheck, Sparkles, Star } from 'lucide-react';
 
@@ -26,6 +26,7 @@ const demoReviews: Review[] = [
             id: 10,
             name: 'María Gómez',
             email: 'maria@example.com',
+            role: 'client',
             email_verified_at: null,
             created_at: '2026-05-01T00:00:00.000Z',
             updated_at: '2026-05-01T00:00:00.000Z',
@@ -48,7 +49,7 @@ const demoReviews: Review[] = [
             user_id: 10,
             service_id: 1,
             date: '2026-05-12',
-            status: 'completada',
+            status: 'completed',
             created_at: '2026-05-01T00:00:00.000Z',
             updated_at: '2026-05-01T00:00:00.000Z',
         },
@@ -66,6 +67,7 @@ const demoReviews: Review[] = [
             id: 11,
             name: 'José Ramírez',
             email: 'jose@example.com',
+            role: 'client',
             email_verified_at: null,
             created_at: '2026-05-01T00:00:00.000Z',
             updated_at: '2026-05-01T00:00:00.000Z',
@@ -88,7 +90,7 @@ const demoReviews: Review[] = [
             user_id: 11,
             service_id: 2,
             date: '2026-05-11',
-            status: 'completada',
+            status: 'completed',
             created_at: '2026-05-01T00:00:00.000Z',
             updated_at: '2026-05-01T00:00:00.000Z',
         },
@@ -96,7 +98,7 @@ const demoReviews: Review[] = [
 ];
 
 export default function ReviewsDemo() {
-    const { auth } = usePage().props as { auth: { user?: { name?: string } } };
+    const { auth } = usePage<SharedData>().props;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

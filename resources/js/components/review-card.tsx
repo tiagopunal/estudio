@@ -73,9 +73,6 @@ export default function ReviewCard({
 
             {/* Rating */}
             <div className="mb-3">
-                        {review.title && (
-                            <p className="text-sm font-semibold mb-1">{review.title}</p>
-                        )}
                         <RatingStars rating={review.rating} readOnly size="md" showValue={true} />
             </div>
 

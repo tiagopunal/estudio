@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,7 +15,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
     ];
 
     protected $hidden = [
@@ -28,6 +29,25 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (User $user): void {
+            $user->profile()->create([
+                'full_name' => $user->name,
+            ]);
+        });
+    }
+
+    public function isClient(): bool
+    {
+        return $this->role === Role::CLIENT;
+    }
+
+    public function isProfessional(): bool
+    {
+        return $this->role === Role::PROFESSIONAL;
     }
 
     // RELACIONES GLOBALES
@@ -51,4 +71,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
-} 
+}

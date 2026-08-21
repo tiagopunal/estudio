@@ -2,103 +2,117 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
+use App\Http\Requests\UpdateMarketplaceProfileRequest;
+use App\Models\Review;
 use App\Models\User;
-use App\Models\Profile;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR PERFIL DE USUARIO
-    |--------------------------------------------------------------------------
-    */
-    public function show(User $user)
+    public function show(User $user): Response
     {
+        $user->load([
+            'profile',
+            'services' => fn ($query) => $query
+                ->where('status', 'active')
+                ->withCount('reviews')
+                ->latest(),
+        ]);
+
+        $receivedReviews = Review::query()
+            ->whereHas('service', fn ($query) => $query->where('user_id', $user->id))
+            ->with(['user', 'service'])
+            ->latest()
+            ->get();
+
         return Inertia::render('Profiles/Show', [
-            'profile' => $user->load('profile', 'services', 'reviews'),
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | MOSTRAR MI PERFIL (AUTENTICADO)
-    |--------------------------------------------------------------------------
-    */
-    public function myProfile()
-    {
-        $user = auth()->user()->load('profile', 'services', 'reviews');
-
-        return Inertia::render('Profiles/Edit', [
             'profile' => $user,
+            'receivedReviews' => $receivedReviews,
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACTUALIZAR MI PERFIL
-    |--------------------------------------------------------------------------
-    */
-    public function updateProfile(Request $request)
+    public function edit(Request $request): Response
     {
-        $validated = $request->validate([
-            'description' => 'nullable|string|max:1000',
-            'phone' => 'nullable|string|max:20',
-            'location' => 'nullable|string|max:255',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        return Inertia::render('Profiles/Edit', [
+            'profile' => $request->user()->load('profile'),
         ]);
+    }
 
-        $user = auth()->user();
-        
-        // Handle avatar upload
+    public function update(UpdateMarketplaceProfileRequest $request): RedirectResponse
+    {
+        $user = $request->user();
+        $validated = $request->safe()->except('avatar');
+
         if ($request->hasFile('avatar')) {
             if ($user->profile?->avatar) {
-                // Delete old avatar
-                \Storage::delete($user->profile->avatar);
+                Storage::disk('public')->delete($user->profile->avatar);
             }
+
             $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
-        // Update or create profile
-        $user->profile()->updateOrCreate(
-            ['user_id' => $user->id],
-            $validated
-        );
+        $user->profile()->updateOrCreate(['user_id' => $user->id], $validated);
 
-        return redirect()->route('profile.my-profile')
-            ->with('success', 'Perfil actualizado correctamente');
+        return to_route('marketplace-profile.edit')
+            ->with('success', 'Perfil actualizado correctamente.');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | LISTAR SERVICIOS DEL USUARIO
-    |--------------------------------------------------------------------------
-    */
-    public function services(User $user)
+    public function upgradeToProfessional(Request $request): RedirectResponse
     {
-        $services = $user->services()->with('reviews')->get();
+        $user = $request->user()->load('profile');
 
+        if ($user->isProfessional()) {
+            return back()->with('success', 'Tu cuenta ya es profesional.');
+        }
+
+        $profile = $user->profile;
+        $missing = collect([
+            'description' => 'descripción',
+            'phone' => 'teléfono',
+            'location' => 'ubicación',
+            'profession' => 'profesión',
+            'skills' => 'habilidades',
+        ])->filter(fn ($label, $field) => blank($profile?->{$field}));
+
+        if ($missing->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'professional' => 'Completá estos datos antes de activar el perfil profesional: '.$missing->implode(', ').'.',
+            ]);
+        }
+
+        $user->update(['role' => Role::PROFESSIONAL]);
+
+        return back()->with('success', 'Tu perfil profesional fue activado correctamente.');
+    }
+
+    public function services(User $user): Response
+    {
         return Inertia::render('Profiles/Services', [
-            'user' => $user,
-            'services' => $services,
+            'user' => $user->load('profile'),
+            'services' => $user->services()
+                ->where('status', 'active')
+                ->withCount('reviews')
+                ->latest()
+                ->get(),
         ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | LISTAR RESEÑAS DEL USUARIO
-    |--------------------------------------------------------------------------
-    */
-    public function reviews(User $user)
+    public function reviews(User $user): Response
     {
-        $reviews = $user->reviews()
-            ->with('booking', 'service')
+        $reviews = Review::query()
+            ->whereHas('service', fn ($query) => $query->where('user_id', $user->id))
+            ->with(['user', 'service', 'booking'])
             ->latest()
             ->get();
 
         return Inertia::render('Profiles/Reviews', [
-            'user' => $user,
+            'user' => $user->load('profile'),
             'reviews' => $reviews,
         ]);
     }

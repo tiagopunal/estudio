@@ -15,8 +15,15 @@ class Profile extends Model
         'avatar',
         'profession',
         'experience_years',
-        'skills'
+        'skills',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'experience_years' => 'integer',
+        ];
+    }
 
     public function user()
     {

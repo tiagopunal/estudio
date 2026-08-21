@@ -38,6 +38,8 @@ interface Booking {
 
 interface Props {
     booking: Booking;
+    canManageStatus: boolean;
+    canCancel: boolean;
 }
 
 const statusColors = {
@@ -64,7 +66,7 @@ function formatBookingDate(value: string) {
     return parsed.toLocaleString();
 }
 
-export default function BookingsShow({ booking }: Props) {
+export default function BookingsShow({ booking, canManageStatus, canCancel }: Props) {
     const { data, setData, patch, processing, errors } = useForm({
         status: booking.status,
     });
@@ -75,7 +77,7 @@ export default function BookingsShow({ booking }: Props) {
         { title: `Reserva #${booking.id}`, href: `/bookings/${booking.id}` },
     ];
 
-    const handleStatusChange = (newStatus: string) => {
+    const handleStatusChange = (newStatus: Booking['status']) => {
         if (newStatus !== data.status) {
             setData('status', newStatus);
             patch(route('bookings.updateStatus', booking.id), {
@@ -84,10 +86,7 @@ export default function BookingsShow({ booking }: Props) {
         }
     };
 
-    const canChangeStatus =
-        (booking.status === 'pending' || booking.status === 'confirmed') &&
-        booking.status !== 'completed' &&
-        booking.status !== 'cancelled';
+    const canChangeStatus = booking.status === 'pending' || booking.status === 'confirmed';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -197,7 +196,7 @@ export default function BookingsShow({ booking }: Props) {
                                 <div className="mt-4 space-y-3">
                                     {booking.status === 'pending' && (
                                         <>
-                                            <Button
+                                            {canManageStatus && <Button
                                                 onClick={() => handleStatusChange('confirmed')}
                                                 disabled={processing}
                                                 className="w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
@@ -210,35 +209,35 @@ export default function BookingsShow({ booking }: Props) {
                                                 ) : (
                                                     'Confirmar reserva'
                                                 )}
-                                            </Button>
-                                            <Button
+                                            </Button>}
+                                            {canCancel && <Button
                                                 onClick={() => handleStatusChange('cancelled')}
                                                 disabled={processing}
                                                 variant="outline"
                                                 className="w-full rounded-full border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-200 dark:hover:bg-rose-950/40"
                                             >
                                                 {processing ? 'Cancelando...' : 'Cancelar reserva'}
-                                            </Button>
+                                            </Button>}
                                         </>
                                     )}
 
                                     {booking.status === 'confirmed' && (
                                         <>
-                                            <Button
+                                            {canManageStatus && <Button
                                                 onClick={() => handleStatusChange('completed')}
                                                 disabled={processing}
                                                 className="w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                                             >
                                                 {processing ? 'Completando...' : 'Completar reserva'}
-                                            </Button>
-                                            <Button
+                                            </Button>}
+                                            {canCancel && <Button
                                                 onClick={() => handleStatusChange('cancelled')}
                                                 disabled={processing}
                                                 variant="outline"
                                                 className="w-full rounded-full border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-200 dark:hover:bg-rose-950/40"
                                             >
                                                 {processing ? 'Cancelando...' : 'Cancelar reserva'}
-                                            </Button>
+                                            </Button>}
                                         </>
                                     )}
                                 </div>

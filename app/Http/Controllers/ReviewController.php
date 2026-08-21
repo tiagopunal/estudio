@@ -188,11 +188,15 @@ class ReviewController extends Controller
 
     private function updateServiceAverageRating(int $serviceId): void
     {
-        $averageRating = Review::where('service_id', $serviceId)
-            ->average('rating');
+        $reviews = Review::where('service_id', $serviceId);
+        $averageRating = (clone $reviews)->average('rating');
+        $totalReviews = $reviews->count();
 
         Service::where('id', $serviceId)
-            ->update(['average_rating' => $averageRating ?? 0]);
+            ->update([
+                'average_rating' => $averageRating ?? 0,
+                'total_reviews' => $totalReviews,
+            ]);
     }
 
     private function isCompletedStatus(?string $status): bool

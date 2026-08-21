@@ -162,7 +162,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 ))}
                             </div>
                         </div>
-                        <DropdownMenu>
+                        {auth.user ? <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
@@ -176,7 +176,11 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <DropdownMenuContent className="w-56" align="end">
                                 <UserMenuContent user={auth.user} />
                             </DropdownMenuContent>
-                        </DropdownMenu>
+                        </DropdownMenu> : (
+                            <Button asChild variant="outline">
+                                <Link href={route('login')}>Iniciar sesión</Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>

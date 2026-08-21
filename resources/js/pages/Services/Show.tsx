@@ -13,6 +13,9 @@ interface Review {
     user: {
         id: number;
         name: string;
+        profile?: {
+            description?: string;
+        };
     };
 }
 
@@ -28,6 +31,9 @@ interface Service {
     user: {
         id: number;
         name: string;
+        profile?: {
+            description?: string;
+        };
     };
     reviews: Review[];
 }

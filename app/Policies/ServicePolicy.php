@@ -2,8 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\User;
+use App\Enums\Role;
 use App\Models\Service;
+use App\Models\User;
 
 class ServicePolicy
 {
@@ -28,7 +29,7 @@ class ServicePolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'professional';
+        return $user->role === Role::PROFESSIONAL;
     }
 
     /**
