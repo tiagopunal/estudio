@@ -72,9 +72,9 @@ export default function ProfilesEdit({ profile }: Props) {
                 <Card className="p-6">
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-5 md:grid-cols-2">
-                            <div><Label htmlFor="full_name">Nombre completo</Label><Input id="full_name" value={data.full_name} onChange={(e) => setData('full_name', e.target.value)} /><InputError message={errors.full_name} /></div>
+                            <div><Label htmlFor="full_name">Nombre completo</Label><Input id="full_name" required minLength={2} maxLength={100} value={data.full_name} onChange={(e) => setData('full_name', e.target.value)} /><InputError message={errors.full_name} /></div>
                             <div><Label>Correo de la cuenta</Label><Input value={profile.email} disabled /></div>
-                            <div><Label htmlFor="phone">Teléfono</Label><Input id="phone" value={data.phone} onChange={(e) => setData('phone', e.target.value)} /><InputError message={errors.phone} /></div>
+                            <div><Label htmlFor="phone">Teléfono</Label><Input id="phone" minLength={8} maxLength={30} pattern="^\\+?[0-9\\s()\\-]+$" value={data.phone} onChange={(e) => setData('phone', e.target.value)} /><InputError message={errors.phone} /></div>
                             <div><Label htmlFor="location">Ubicación</Label><Input id="location" value={data.location} onChange={(e) => setData('location', e.target.value)} placeholder="Ciudad, provincia" /><InputError message={errors.location} /></div>
                             <div><Label htmlFor="profession">Profesión u oficio</Label><Input id="profession" value={data.profession} onChange={(e) => setData('profession', e.target.value)} placeholder="Plomero, tutor, diseñador..." /><InputError message={errors.profession} /></div>
                             <div><Label htmlFor="experience_years">Años de experiencia</Label><Input id="experience_years" type="number" min={0} max={80} value={data.experience_years} onChange={(e) => setData('experience_years', Number(e.target.value))} /><InputError message={errors.experience_years} /></div>

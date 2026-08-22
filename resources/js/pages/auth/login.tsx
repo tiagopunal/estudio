@@ -50,15 +50,17 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             id="email"
                             type="email"
                             required
+                            inputMode="email"
                             autoFocus
                             tabIndex={1}
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            placeholder="nombre@gmail.com"
                             className="border-slate-600/50 bg-slate-900/50 text-white placeholder:text-slate-500 focus:border-cyan-400/50 focus:ring-cyan-400/20"
                         />
                         <InputError message={errors.email} />
+                        <p className="text-xs text-slate-400">Ingresá el correo completo con el que te registraste.</p>
                     </div>
 
                     <div className="grid gap-2">
@@ -89,6 +91,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             id="remember" 
                             name="remember" 
                             tabIndex={3}
+                            checked={data.remember}
+                            onCheckedChange={(checked) => setData('remember', checked === true)}
                             className="border-slate-600 bg-slate-900/50"
                         />
                         <Label htmlFor="remember" className="text-slate-300 font-normal cursor-pointer">Recuérdame</Label>

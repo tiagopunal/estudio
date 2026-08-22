@@ -2,14 +2,15 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
 use App\Models\Booking;
-use App\Models\Service;
 use App\Models\Review;
+use App\Models\Service;
 use App\Policies\BookingPolicy;
-use App\Policies\ServicePolicy;
 use App\Policies\ReviewPolicy;
+use App\Policies\ServicePolicy;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Password::defaults(fn () => Password::min(8)->mixedCase()->numbers());
+
         // Usar Bootstrap para pagination
         Paginator::useBootstrapFive();
 

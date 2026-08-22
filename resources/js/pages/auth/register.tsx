@@ -43,6 +43,8 @@ export default function Register() {
                             id="name"
                             type="text"
                             required
+                            minLength={2}
+                            maxLength={100}
                             autoFocus
                             tabIndex={1}
                             autoComplete="name"
@@ -61,15 +63,17 @@ export default function Register() {
                             id="email"
                             type="email"
                             required
+                            inputMode="email"
                             tabIndex={2}
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             disabled={processing}
-                            placeholder="email@example.com"
+                            placeholder="nombre@gmail.com"
                             className="border-slate-600/50 bg-slate-900/50 text-white placeholder:text-slate-500 focus:border-cyan-400/50 focus:ring-cyan-400/20"
                         />
                         <InputError message={errors.email} />
+                        <p className="text-xs text-slate-400">Usá un correo completo, por ejemplo nombre@gmail.com.</p>
                     </div>
 
                     <div className="grid gap-2">
@@ -78,6 +82,7 @@ export default function Register() {
                             id="password"
                             type="password"
                             required
+                            minLength={8}
                             tabIndex={3}
                             autoComplete="new-password"
                             value={data.password}
@@ -87,6 +92,7 @@ export default function Register() {
                             className="border-slate-600/50 bg-slate-900/50 text-white placeholder:text-slate-500 focus:border-cyan-400/50 focus:ring-cyan-400/20"
                         />
                         <InputError message={errors.password} />
+                        <p className="text-xs text-slate-400">Mínimo 8 caracteres, con mayúscula, minúscula y número.</p>
                     </div>
 
                     <div className="grid gap-2">
@@ -95,6 +101,7 @@ export default function Register() {
                             id="password_confirmation"
                             type="password"
                             required
+                            minLength={8}
                             tabIndex={4}
                             autoComplete="new-password"
                             value={data.password_confirmation}

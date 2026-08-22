@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
+use App\Rules\StrictEmail;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules;
 
@@ -16,16 +18,24 @@ class StoreRegisterRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'name' => preg_replace('/\s+/', ' ', trim((string) $this->input('name'))),
+            'email' => mb_strtolower(trim((string) $this->input('email'))),
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'name' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\pM\s\'.\-]+$/u'],
+            'email' => ['required', 'string', 'lowercase', new StrictEmail, 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
     }
@@ -39,6 +49,8 @@ class StoreRegisterRequest extends FormRequest
             'name.required' => 'El nombre es obligatorio.',
             'name.string' => 'El nombre debe ser una cadena de texto.',
             'name.max' => 'El nombre no puede exceder 255 caracteres.',
+            'name.min' => 'El nombre debe tener al menos 2 caracteres.',
+            'name.regex' => 'El nombre solo puede contener letras, espacios, puntos, apóstrofes y guiones.',
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.email' => 'El correo electrónico debe ser una dirección válida.',
             'email.lowercase' => 'El correo electrónico debe estar en minúsculas.',

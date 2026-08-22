@@ -3,7 +3,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LogOut, Settings, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, CalendarDays, Compass, House, LogOut, Settings, Star, UserRound } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -21,6 +21,39 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                    <Link className="block w-full" href={route('dashboard')} as="button" onClick={cleanup}>
+                        <House className="mr-2" />
+                        Inicio
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link className="block w-full" href={route('services.browse')} as="button" onClick={cleanup}>
+                        <Compass className="mr-2" />
+                        Explorar servicios
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link className="block w-full" href={route('bookings.index')} as="button" onClick={cleanup}>
+                        <CalendarDays className="mr-2" />
+                        Mis reservas
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link className="block w-full" href={route('reviews.index')} as="button" onClick={cleanup}>
+                        <Star className="mr-2" />
+                        Opiniones y reseñas
+                    </Link>
+                </DropdownMenuItem>
+                {user.role === 'professional' && (
+                    <DropdownMenuItem asChild>
+                        <Link className="block w-full" href={route('services.index')} as="button" onClick={cleanup}>
+                            <BriefcaseBusiness className="mr-2" />
+                            Mis servicios
+                        </Link>
+                    </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('marketplace-profile.edit')} as="button" prefetch onClick={cleanup}>
                         <UserRound className="mr-2" />

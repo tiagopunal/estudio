@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaveServiceRequest;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,18 +43,11 @@ class ServiceController extends Controller
     | GUARDAR NUEVO SERVICIO
     |--------------------------------------------------------------------------
     */
-    public function store(Request $request)
+    public function store(SaveServiceRequest $request)
     {
         $this->authorize('create', Service::class);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
-            'price' => 'required|numeric|min:0.01',
-            'category' => 'required|string|max:50',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-        ]);
+        $validated = $request->validated();
 
         $service = Service::create([
             'user_id' => auth()->id(),
@@ -98,18 +92,11 @@ class ServiceController extends Controller
     | ACTUALIZAR SERVICIO
     |--------------------------------------------------------------------------
     */
-    public function update(Request $request, Service $service)
+    public function update(SaveServiceRequest $request, Service $service)
     {
         $this->authorize('update', $service);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
-            'price' => 'required|numeric|min:0.01',
-            'category' => 'required|string|max:50',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-        ]);
+        $validated = $request->validated();
 
         $service->update($validated);
 
@@ -139,17 +126,25 @@ class ServiceController extends Controller
     */
     public function search(Request $request)
     {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'category' => ['nullable', 'string', 'max:50'],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
+        ]);
+
         $query = Service::with('user.profile', 'reviews')
-            ->where('user_id', '!=', auth()->id());
+            ->where('status', 'active')
+            ->when(auth()->check(), fn ($query) => $query->where('user_id', '!=', auth()->id()));
 
         // Filtrar por categoría
-        if ($request->has('category') && $request->category) {
-            $query->where('category', $request->category);
+        if (! empty($filters['category'])) {
+            $query->where('category', $filters['category']);
         }
 
         // Filtrar por búsqueda de texto
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
@@ -157,19 +152,19 @@ class ServiceController extends Controller
         }
 
         // Filtrar por precio
-        if ($request->has('min_price') && $request->min_price) {
-            $query->where('price', '>=', $request->min_price);
+        if (isset($filters['min_price'])) {
+            $query->where('price', '>=', $filters['min_price']);
         }
 
-        if ($request->has('max_price') && $request->max_price) {
-            $query->where('price', '<=', $request->max_price);
+        if (isset($filters['max_price'])) {
+            $query->where('price', '<=', $filters['max_price']);
         }
 
         $services = $query->latest()->paginate(12);
 
         return Inertia::render('Services/Browse', [
             'services' => $services,
-            'filters' => $request->all(),
+            'filters' => $filters,
         ]);
     }
 }

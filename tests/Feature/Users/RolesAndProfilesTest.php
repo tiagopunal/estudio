@@ -15,8 +15,8 @@ class RolesAndProfilesTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Thiago Alonso',
             'email' => 'thiago@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1',
+            'password_confirmation' => 'Password1',
             'role' => 'professional',
         ]);
 
@@ -89,7 +89,7 @@ class RolesAndProfilesTest extends TestCase
         $this->actingAs($client)->get('/services/create')->assertForbidden();
         $this->actingAs($client)->post('/services', [
             'title' => 'Servicio no autorizado',
-            'description' => 'No debería crearse.',
+            'description' => 'Este servicio no debería poder ser creado por un cliente.',
             'price' => 100,
             'category' => 'Hogar',
         ])->assertForbidden();

@@ -13,6 +13,7 @@ export default function ServicesCreate() {
         description: '',
         price: '',
         category: '',
+        location: '',
         latitude: '',
         longitude: '',
     });
@@ -43,6 +44,9 @@ export default function ServicesCreate() {
                             <Input
                                 id="title"
                                 type="text"
+                                required
+                                minLength={5}
+                                maxLength={120}
                                 value={data.title}
                                 onChange={(e) => setData('title', e.target.value)}
                                 placeholder="Ej: Diseño de sitios web"
@@ -65,6 +69,9 @@ export default function ServicesCreate() {
                                 onChange={(e) => setData('description', e.target.value)}
                                 placeholder="Describe tu servicio en detalle..."
                                 rows={5}
+                                required
+                                minLength={20}
+                                maxLength={2000}
                                 className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             {errors.description && (
@@ -82,6 +89,9 @@ export default function ServicesCreate() {
                                 id="price"
                                 type="number"
                                 step="0.01"
+                                required
+                                min="0.01"
+                                max="99999999.99"
                                 value={data.price}
                                 onChange={(e) => setData('price', e.target.value)}
                                 placeholder="0.00"
@@ -101,6 +111,9 @@ export default function ServicesCreate() {
                             <Input
                                 id="category"
                                 type="text"
+                                required
+                                minLength={3}
+                                maxLength={50}
                                 value={data.category}
                                 onChange={(e) => setData('category', e.target.value)}
                                 placeholder="Ej: Diseño, Programación, etc."
@@ -114,6 +127,20 @@ export default function ServicesCreate() {
                             )}
                         </div>
 
+                        <div>
+                            <Label htmlFor="location">Ubicación o zona del servicio</Label>
+                            <Input
+                                id="location"
+                                type="text"
+                                maxLength={255}
+                                value={data.location}
+                                onChange={(e) => setData('location', e.target.value)}
+                                placeholder="Ej: Palermo, Ciudad de Buenos Aires"
+                                className="mt-2"
+                            />
+                            {errors.location && <p className="mt-2 text-sm text-red-600">{errors.location}</p>}
+                        </div>
+
                         {/* Ubicación */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -122,11 +149,14 @@ export default function ServicesCreate() {
                                     id="latitude"
                                     type="number"
                                     step="0.0001"
+                                    min="-90"
+                                    max="90"
                                     value={data.latitude}
                                     onChange={(e) => setData('latitude', e.target.value)}
                                     placeholder="-34.6037"
                                     className="mt-2"
                                 />
+                                {errors.latitude && <p className="mt-2 text-sm text-red-600">{errors.latitude}</p>}
                             </div>
                             <div>
                                 <Label htmlFor="longitude">Longitud (Opcional)</Label>
@@ -134,11 +164,14 @@ export default function ServicesCreate() {
                                     id="longitude"
                                     type="number"
                                     step="0.0001"
+                                    min="-180"
+                                    max="180"
                                     value={data.longitude}
                                     onChange={(e) => setData('longitude', e.target.value)}
                                     placeholder="-58.3816"
                                     className="mt-2"
                                 />
+                                {errors.longitude && <p className="mt-2 text-sm text-red-600">{errors.longitude}</p>}
                             </div>
                         </div>
 

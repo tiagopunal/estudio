@@ -42,6 +42,17 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_rejects_an_incomplete_email_domain(): void
+    {
+        $response = $this->post('/login', [
+            'email' => 'usuario@gmail',
+            'password' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
     public function test_users_can_logout()
     {
         $user = User::factory()->create();
