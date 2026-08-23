@@ -133,9 +133,10 @@ class ServiceController extends Controller
             'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
         ]);
 
+        // El catálogo público también muestra los servicios del usuario actual.
+        // El detalle ya evita que un profesional reserve su propio servicio.
         $query = Service::with('user.profile', 'reviews')
-            ->where('status', 'active')
-            ->when(auth()->check(), fn ($query) => $query->where('user_id', '!=', auth()->id()));
+            ->where('status', 'active');
 
         // Filtrar por categoría
         if (! empty($filters['category'])) {

@@ -1,8 +1,8 @@
-﻿import { Head, Link, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+﻿import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, Review, User } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 interface ShowProps {
     review: Review;
@@ -41,9 +41,7 @@ export default function Show({ review, auth }: ShowProps) {
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-2xl font-semibold">Reseña de {review.service?.title}</h1>
-                            <p className="text-sm text-gray-500">
-                                Publicada por {review.user?.name}
-                            </p>
+                            <p className="text-sm text-gray-500">Publicada por {review.user?.name}</p>
                         </div>
                         {isOwner && (
                             <Link href={route('reviews.edit', review.id)}>
@@ -79,9 +77,7 @@ export default function Show({ review, auth }: ShowProps) {
                         </div>
 
                         <div className="mt-4">
-                            <p className="text-sm text-gray-500">
-                                Publicado el {new Date(review.created_at).toLocaleDateString()}
-                            </p>
+                            <p className="text-sm text-gray-500">Publicado el {new Date(review.created_at).toLocaleDateString()}</p>
                         </div>
                     </div>
                 </div>

@@ -1,154 +1,140 @@
-﻿import { type SharedData } from '@/types';
+import { ProLinkFooter } from '@/components/prolink-footer';
+import { ProLinkHeader } from '@/components/prolink-header';
+import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import {
+    ArrowRight,
+    BriefcaseBusiness,
+    CheckCircle2,
+    GraduationCap,
+    HeartPulse,
+    Home,
+    Search,
+    ShieldCheck,
+    Sparkles,
+    Star,
+    Wrench,
+} from 'lucide-react';
 
-const features = [
-    {
-        title: 'Busca servicios rápidos',
-        description: 'Filtra profesionales por categoría, ubicación y disponibilidad para empezar tu búsqueda al instante.',
-    },
-    {
-        title: 'Reserva con confianza',
-        description: 'Revisa perfiles destacados, calificaciones y deja listo el flujo para agendar tu próximo servicio.',
-    },
-    {
-        title: 'Gestiona tu día',
-        description: 'Navega de forma clara entre marketplace, reseñas y dashboard para mantener todo centralizado.',
-    },
+const categories = [
+    { name: 'Hogar', icon: Home },
+    { name: 'Reparaciones', icon: Wrench },
+    { name: 'Educación', icon: GraduationCap },
+    { name: 'Bienestar', icon: HeartPulse },
+    { name: 'Profesionales', icon: BriefcaseBusiness },
 ];
-
-const stats = [
-    { label: 'Servicios activos', value: '120+' },
-    { label: 'Tiempo de reserva', value: '24h' },
-    { label: 'Satisfacción', value: '98%' },
+const steps = [
+    { n: '01', title: 'Buscá y compará', text: 'Explorá servicios, precios y opiniones reales.' },
+    { n: '02', title: 'Reservá', text: 'Elegí el servicio que necesitás y coordiná la fecha.' },
+    { n: '03', title: 'Calificá', text: 'Compartí tu experiencia con la comunidad.' },
 ];
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
-
     return (
-        <>
-            <Head title="Grupo4 Marketplace">
-                <link rel="preconnect" href="https://fonts.bunny.net" />
-                <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-            </Head>
-
-            <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.16),transparent_20%),linear-gradient(180deg,#020617_0%,#0f172a_45%,#111827_100%)] text-white">
-                <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 lg:px-8">
+        <div className="min-h-screen bg-[#f8f7fc]">
+            <Head title="ProLink Marketplace" />
+            <ProLinkHeader />
+            <main>
+                <section className="prolink-page grid min-h-[620px] items-center gap-12 lg:grid-cols-[1.05fr_.95fr]">
                     <div>
-                        <p className="text-sm uppercase tracking-[0.35em] text-cyan-200">Grupo4</p>
-                        <p className="mt-2 text-lg font-semibold text-white">Marketplace para servicios confiables</p>
-                    </div>
-                    <nav className="flex items-center gap-3">
-                        {auth.user ? (
-                            <Link
-                                href={route('dashboard')}
-                                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-300/60 hover:bg-white/5"
-                            >
-                                Ir al dashboard
-                            </Link>
-                        ) : (
-                            <>
-                                <Link
-                                    href={route('login')}
-                                    className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-300/60 hover:bg-white/5"
-                                >
-                                    Iniciar sesión
-                                </Link>
-                                <Link
-                                    href={route('register')}
-                                    className="rounded-full bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
-                                >
-                                    Registrarse
-                                </Link>
-                            </>
-                        )}
-                    </nav>
-                </header>
-
-                <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 pb-14 lg:flex-row lg:items-center lg:px-8">
-                    <section className="max-w-2xl">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-sm text-cyan-100">
-                            <Sparkles className="h-4 w-4" />
-                            Nuevo catálogo de servicios
+                        <div className="prolink-kicker inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2">
+                            <ShieldCheck className="size-4" /> Profesionales locales de confianza
                         </div>
-                        <h1 className="mt-6 text-4xl font-semibold leading-tight sm:text-5xl">
-                            Encuentra expertos, agenda tu servicio y deja una experiencia premium para tu comunidad.
+                        <h1 className="mt-6 text-5xl leading-[1.04] font-bold tracking-[-.05em] text-slate-950 sm:text-6xl">
+                            Encontrá el <span className="text-primary">talento local</span> perfecto para cada tarea.
                         </h1>
-                        <p className="mt-5 text-lg leading-8 text-slate-200">
-                            Un marketplace moderno con navegación clara, botones grandes y una estética fresca que mantiene todo enfocado en el usuario.
+                        <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                            Desde reparaciones para el hogar hasta clases particulares. Compará profesionales, reservá y calificá desde un solo lugar.
                         </p>
-
-                        <div className="mt-8 flex flex-wrap gap-3">
-                            <Link
-                                href={route('marketplace')}
-                                className="inline-flex items-center gap-2 rounded-full bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
-                            >
-                                Explorar marketplace
-                                <ArrowRight className="h-4 w-4" />
-                            </Link>
-                            <Link
-                                href={route('reviews.demo')}
-                                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-amber-200/70 hover:bg-white/5"
-                            >
-                                Ver reseñas demo
+                        <form action="/services/browse" className="prolink-panel mt-8 flex flex-col gap-2 p-2 sm:flex-row">
+                            <div className="flex flex-1 items-center gap-3 px-3">
+                                <Search className="size-5 text-slate-400" />
+                                <input name="search" className="min-h-12 w-full bg-transparent" placeholder="¿Qué servicio estás buscando?" />
+                            </div>
+                            <button className="prolink-primary sm:min-w-36">Buscar</button>
+                        </form>
+                        <div className="mt-5 flex flex-wrap gap-4 text-sm text-slate-600">
+                            <span className="flex items-center gap-2">
+                                <CheckCircle2 className="size-4 text-emerald-500" /> Perfiles completos
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <CheckCircle2 className="size-4 text-emerald-500" /> Reseñas verificadas
+                            </span>
+                        </div>
+                    </div>
+                    <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-500 p-8 text-white shadow-[0_30px_80px_rgba(0,75,210,.22)] sm:p-12">
+                        <Sparkles className="absolute top-8 right-8 size-12 text-blue-200" />
+                        <p className="text-sm font-bold tracking-[.18em] text-blue-100 uppercase">Comunidad ProLink</p>
+                        <h2 className="mt-5 text-4xl leading-tight font-bold">Tu próximo profesional está más cerca de lo que pensás.</h2>
+                        <p className="mt-5 text-blue-50">Publicá, reservá y construí reputación con una experiencia simple y transparente.</p>
+                        <div className="mt-12 grid grid-cols-2 gap-3">
+                            <div className="rounded-2xl bg-white/12 p-5 backdrop-blur">
+                                <p className="text-3xl font-bold">5★</p>
+                                <p className="mt-1 text-sm text-blue-100">Sistema de reseñas</p>
+                            </div>
+                            <div className="rounded-2xl bg-white/12 p-5 backdrop-blur">
+                                <p className="text-3xl font-bold">24/7</p>
+                                <p className="mt-1 text-sm text-blue-100">Catálogo disponible</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section className="border-border border-y bg-white">
+                    <div className="prolink-page">
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <p className="prolink-kicker">Explorá por categoría</p>
+                                <h2 className="mt-2 text-3xl font-bold">Servicios para cada necesidad</h2>
+                            </div>
+                            <Link href={route('services.browse')} className="text-primary hidden font-semibold sm:flex">
+                                Ver todos <ArrowRight className="ml-2 size-5" />
                             </Link>
                         </div>
-
-                        <dl className="mt-10 grid gap-4 sm:grid-cols-3">
-                            {stats.map((item) => (
-                                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-                                    <dt className="text-sm text-slate-200">{item.label}</dt>
-                                    <dd className="mt-2 text-2xl font-semibold text-white">{item.value}</dd>
-                                </div>
+                        <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
+                            {categories.map(({ name, icon: Icon }) => (
+                                <Link
+                                    key={name}
+                                    href={`/services/browse?category=${encodeURIComponent(name)}`}
+                                    className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-5 text-center text-slate-950 shadow-sm transition hover:-translate-y-1 hover:border-blue-600 hover:bg-blue-100"
+                                >
+                                    <span className="text-primary mx-auto flex size-12 items-center justify-center rounded-full bg-blue-50">
+                                        <Icon />
+                                    </span>
+                                    <p className="mt-4 font-extrabold text-blue-950">{name}</p>
+                                </Link>
                             ))}
-                        </dl>
-                    </section>
-
-                    <section className="flex-1">
-                        <div className="rounded-[28px] border border-cyan-300/30 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(15,23,42,0.9),rgba(16,185,129,0.18))] p-6 shadow-[0_28px_80px_rgba(34,211,238,0.16)]">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                {features.map((feature) => (
-                                    <article key={feature.title} className="rounded-2xl border border-white/10 bg-slate-950/75 p-4">
-                                        <p className="text-sm font-semibold text-cyan-200">{feature.title}</p>
-                                        <p className="mt-3 text-sm leading-6 text-slate-200">{feature.description}</p>
-                                    </article>
-                                ))}
-                            </div>
-
-                            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/80 p-5">
-                                <div className="flex items-center gap-2 text-sm text-slate-200">
-                                    <ShieldCheck className="h-4 w-4 text-emerald-300" />
-                                    Diseño pensado para seguir creciendo
-                                </div>
-                                <div className="mt-4 flex flex-wrap gap-3">
-                                    <Link
-                                        href={route('marketplace')}
-                                        className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-                                    >
-                                        Ir al marketplace
-                                    </Link>
-                                    {auth.user ? (
-                                        <Link
-                                            href={route('dashboard')}
-                                            className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:border-cyan-300/60"
-                                        >
-                                            Ver dashboard
-                                        </Link>
-                                    ) : (
-                                        <Link
-                                            href={route('login')}
-                                            className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:border-cyan-300/60"
-                                        >
-                                            Iniciar sesión
-                                        </Link>
-                                    )}
-                                </div>
-                            </div>
                         </div>
-                    </section>
-                </main>
-            </div>
-        </>
+                    </div>
+                </section>
+                <section id="como-funciona" className="prolink-page scroll-mt-24">
+                    <div className="text-center">
+                        <p className="prolink-kicker">Cómo funciona</p>
+                        <h2 className="mt-2 text-3xl font-bold">Conectarse nunca fue tan simple</h2>
+                    </div>
+                    <div className="mt-10 grid gap-5 md:grid-cols-3">
+                        {steps.map((step) => (
+                            <article key={step.n} className="prolink-panel p-7">
+                                <span className="text-3xl font-bold text-blue-200">{step.n}</span>
+                                <h3 className="mt-5 text-xl font-bold">{step.title}</h3>
+                                <p className="mt-2 text-slate-600">{step.text}</p>
+                            </article>
+                        ))}
+                    </div>
+                    <div className="mt-12 flex flex-col items-center rounded-3xl bg-slate-950 p-8 text-center text-white sm:p-12">
+                        <Star className="size-8 fill-blue-400 text-blue-400" />
+                        <h2 className="mt-4 text-3xl font-bold">¿Ofrecés un servicio?</h2>
+                        <p className="mt-3 max-w-xl text-slate-300">Creá tu perfil profesional, publicá tus servicios y empezá a recibir reservas.</p>
+                        <Link
+                            href={auth.user ? route('marketplace-profile.edit') : route('register')}
+                            className="prolink-primary text-primary mt-6 bg-white hover:bg-blue-50"
+                        >
+                            Comenzar ahora
+                        </Link>
+                    </div>
+                </section>
+            </main>
+            <ProLinkFooter />
+        </div>
     );
 }

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Star } from 'lucide-react';
 
 interface RatingStarsProps {
@@ -9,13 +8,7 @@ interface RatingStarsProps {
     showValue?: boolean;
 }
 
-export default function RatingStars({
-    rating,
-    onRatingChange,
-    readOnly = true,
-    size = 'md',
-    showValue = true,
-}: RatingStarsProps) {
+export default function RatingStars({ rating, onRatingChange, readOnly = true, size = 'md', showValue = true }: RatingStarsProps) {
     const sizeMap = {
         sm: 'w-4 h-4',
         md: 'w-5 h-5',
@@ -36,25 +29,13 @@ export default function RatingStars({
                         key={star}
                         onClick={() => handleStarClick(star)}
                         disabled={readOnly}
-                        className={`${sizeMap[size]} transition-colors ${
-                            readOnly ? 'cursor-default' : 'cursor-pointer hover:opacity-80'
-                        }`}
+                        className={`${sizeMap[size]} transition-colors ${readOnly ? 'cursor-default' : 'cursor-pointer hover:opacity-80'}`}
                     >
-                        <Star
-                            className={`w-full h-full ${
-                                star <= rating
-                                    ? 'fill-yellow-400 text-yellow-400'
-                                    : 'text-gray-300'
-                            }`}
-                        />
+                        <Star className={`h-full w-full ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
                     </button>
                 ))}
             </div>
-            {showValue && (
-                <span className="text-sm font-semibold text-gray-700 ml-2">
-                    {rating.toFixed(1)}
-                </span>
-            )}
+            {showValue && <span className="ml-2 text-sm font-semibold text-gray-700">{rating.toFixed(1)}</span>}
         </div>
     );
 }

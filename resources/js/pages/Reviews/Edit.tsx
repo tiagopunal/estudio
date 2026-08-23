@@ -1,10 +1,10 @@
-﻿import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+﻿import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Star, AlertCircle } from 'lucide-react';
+import { Head, useForm } from '@inertiajs/react';
+import { AlertCircle, Star } from 'lucide-react';
 
 interface Review {
     id: number;
@@ -41,38 +41,27 @@ export default function ReviewsEdit({ review }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Editar Reseña" />
 
-            <div className="max-w-2xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">
-                    Editar Reseña: {review.service.title}
-                </h1>
+            <div className="mx-auto max-w-2xl">
+                <h1 className="mb-6 text-3xl font-bold">Editar Reseña: {review.service.title}</h1>
 
                 <Card className="p-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Calificación */}
                         <div>
                             <Label>Calificación</Label>
-                            <div className="flex gap-2 mt-3">
+                            <div className="mt-3 flex gap-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                         key={star}
                                         type="button"
                                         onClick={() => setData('rating', star)}
-                                        className="focus:outline-none transition"
+                                        className="transition focus:outline-none"
                                     >
-                                        <Star
-                                            size={32}
-                                            className={
-                                                star <= data.rating
-                                                    ? 'fill-yellow-400 text-yellow-400'
-                                                    : 'text-gray-300'
-                                            }
-                                        />
+                                        <Star size={32} className={star <= data.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'} />
                                     </button>
                                 ))}
                             </div>
-                            <p className="mt-2 text-sm text-gray-600">
-                                {data.rating} de 5 estrellas
-                            </p>
+                            <p className="mt-2 text-sm text-gray-600">{data.rating} de 5 estrellas</p>
                         </div>
 
                         {/* Comentario */}
@@ -83,10 +72,10 @@ export default function ReviewsEdit({ review }: Props) {
                                 value={data.comment}
                                 onChange={(e) => setData('comment', e.target.value)}
                                 rows={6}
-                                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             />
                             {errors.comment && (
-                                <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
+                                <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
                                     <AlertCircle size={16} />
                                     {errors.comment}
                                 </div>

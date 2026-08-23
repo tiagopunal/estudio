@@ -23,16 +23,15 @@ export default function ConfirmPassword() {
     };
 
     return (
-        <AuthLayout
-            title="Confirma tu contraseña"
-            description="Esta es un área segura. Por favor confirma tu contraseña antes de continuar."
-        >
+        <AuthLayout title="Confirma tu contraseña" description="Esta es un área segura. Por favor confirma tu contraseña antes de continuar.">
             <Head title="Confirmar contraseña" />
 
             <form onSubmit={submit}>
                 <div className="space-y-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="password" className="text-slate-200">Contraseña</Label>
+                        <Label htmlFor="password" className="text-slate-200">
+                            Contraseña
+                        </Label>
                         <Input
                             id="password"
                             type="password"
@@ -49,11 +48,11 @@ export default function ConfirmPassword() {
                     </div>
 
                     <div className="flex items-center">
-                        <Button 
-                            className="w-full bg-cyan-300 text-slate-950 hover:bg-cyan-200 font-semibold rounded-full py-2.5" 
+                        <Button
+                            className="w-full rounded-full bg-cyan-300 py-2.5 font-semibold text-slate-950 hover:bg-cyan-200"
                             disabled={processing}
                         >
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                            {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                             Confirmar contraseña
                         </Button>
                     </div>

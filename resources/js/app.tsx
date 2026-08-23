@@ -4,7 +4,6 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
-import { initializeTheme } from './hooks/use-appearance';
 
 declare global {
     const route: typeof routeFn;
@@ -25,5 +24,6 @@ createInertiaApp({
     },
 });
 
-// This will set light / dark mode on load...
-initializeTheme();
+// ProLink usa una identidad visual clara y consistente en todas sus pantallas.
+document.documentElement.classList.remove('dark');
+document.documentElement.style.colorScheme = 'light';

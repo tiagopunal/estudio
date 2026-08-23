@@ -1,67 +1,80 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
+import { ProLinkFooter } from '@/components/prolink-footer';
+import { ProLinkHeader } from '@/components/prolink-header';
 import { type MarketplaceProfile, type Review, type Service, type User } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { BriefcaseBusiness, MapPin, Star } from 'lucide-react';
-
+import { BadgeCheck, BriefcaseBusiness, MapPin, Star } from 'lucide-react';
 interface Props {
     profile: User & { profile?: MarketplaceProfile; services: Service[] };
     receivedReviews: Review[];
 }
-
 export default function ProfilesShow({ profile, receivedReviews }: Props) {
-    const details = profile.profile;
-    const average = receivedReviews.length
-        ? receivedReviews.reduce((sum, review) => sum + review.rating, 0) / receivedReviews.length
-        : 0;
-
+    const d = profile.profile;
+    const avg = receivedReviews.length ? receivedReviews.reduce((n, r) => n + r.rating, 0) / receivedReviews.length : 0;
     return (
-        <AppLayout breadcrumbs={[{ title: 'Servicios', href: '/services/browse' }, { title: profile.name, href: `/profiles/${profile.id}` }]}>
+        <div className="flex min-h-screen flex-col bg-[#f8f7fc]">
             <Head title={`Perfil de ${profile.name}`} />
-            <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
-                <Card className="p-6">
-                    <div className="flex flex-col gap-6 md:flex-row">
-                        {details?.avatar ? (
-                            <img src={`/storage/${details.avatar}`} alt={profile.name} className="h-32 w-32 rounded-full object-cover" />
-                        ) : (
-                            <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-full bg-slate-200 text-4xl font-bold text-slate-600">
-                                {profile.name.charAt(0).toUpperCase()}
-                            </div>
-                        )}
-                        <div className="flex-1 space-y-3">
-                            <div className="flex flex-wrap items-center gap-3">
-                                <h1 className="text-3xl font-bold">{details?.full_name || profile.name}</h1>
-                                <Badge variant={profile.role === 'professional' ? 'default' : 'secondary'}>
-                                    {profile.role === 'professional' ? 'Profesional verificado' : 'Cliente'}
-                                </Badge>
-                            </div>
-                            {details?.profession && <p className="flex items-center gap-2 font-medium"><BriefcaseBusiness className="size-4" />{details.profession}</p>}
-                            {details?.location && <p className="flex items-center gap-2 text-muted-foreground"><MapPin className="size-4" />{details.location}</p>}
-                            {details?.description && <p className="max-w-2xl leading-7 text-muted-foreground">{details.description}</p>}
-                            <div className="flex flex-wrap gap-4 text-sm">
-                                <span>{details?.experience_years ?? 0} años de experiencia</span>
-                                <span className="flex items-center gap-1"><Star className="size-4 fill-amber-400 text-amber-400" />{average.toFixed(1)} ({receivedReviews.length} reseñas)</span>
-                            </div>
-                            {details?.skills && <p><strong>Habilidades:</strong> {details.skills}</p>}
+            <ProLinkHeader />
+            <main className="prolink-page flex-1">
+                <section className="prolink-panel flex flex-col gap-6 p-7 sm:flex-row sm:items-center">
+                    <div className="text-primary flex size-32 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-4xl font-bold">
+                        {d?.avatar ? <img src={`/storage/${d.avatar}`} className="size-full object-cover" /> : profile.name.charAt(0)}
+                    </div>
+                    <div>
+                        <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800">
+                            <BadgeCheck className="size-4" />
+                            {profile.role === 'professional' ? 'Profesional' : 'Cliente'}
+                        </span>
+                        <h1 className="mt-3 text-4xl font-bold">{d?.full_name || profile.name}</h1>
+                        {d?.profession && <p className="mt-2 text-xl text-slate-600">{d.profession}</p>}
+                        <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-slate-600">
+                            {d?.location && (
+                                <span className="flex gap-2">
+                                    <MapPin className="text-primary size-4" />
+                                    {d.location}
+                                </span>
+                            )}
+                            <span className="flex gap-2">
+                                <Star className="size-4 fill-amber-400 text-amber-400" />
+                                {avg.toFixed(1)} ({receivedReviews.length} reseñas)
+                            </span>
+                            <span>{d?.experience_years ?? 0} años de experiencia</span>
                         </div>
                     </div>
-                </Card>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                    <Card className="p-6">
-                        <h2 className="text-xl font-semibold">Servicios publicados</h2>
-                        <p className="mt-2 text-3xl font-bold">{profile.services.length}</p>
-                        <Button asChild variant="outline" className="mt-4"><Link href={route('profiles.services', profile.id)}>Ver servicios</Link></Button>
-                    </Card>
-                    <Card className="p-6">
-                        <h2 className="text-xl font-semibold">Reputación recibida</h2>
-                        <p className="mt-2 text-3xl font-bold">{receivedReviews.length} reseñas</p>
-                        <Button asChild variant="outline" className="mt-4"><Link href={route('profiles.reviews', profile.id)}>Ver reseñas</Link></Button>
-                    </Card>
+                </section>
+                <div className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_.7fr]">
+                    <section className="prolink-panel p-7">
+                        <h2 className="text-2xl font-bold">Sobre este profesional</h2>
+                        <p className="mt-4 leading-8 whitespace-pre-line text-slate-700">
+                            {d?.description || 'Este usuario todavía no agregó una descripción profesional.'}
+                        </p>
+                        {d?.skills && (
+                            <div className="mt-6">
+                                <h3 className="font-bold">Habilidades</h3>
+                                <p className="mt-2 text-slate-600">{d.skills}</p>
+                            </div>
+                        )}
+                    </section>
+                    <aside className="space-y-4">
+                        <div className="prolink-panel p-6">
+                            <BriefcaseBusiness className="text-primary" />
+                            <p className="mt-4 text-3xl font-bold">{profile.services.length}</p>
+                            <p className="text-slate-600">servicios publicados</p>
+                            <Link href={route('profiles.services', profile.id)} className="prolink-primary mt-5 w-full">
+                                Ver servicios
+                            </Link>
+                        </div>
+                        <div className="prolink-panel p-6">
+                            <Star className="text-primary" />
+                            <p className="mt-4 text-3xl font-bold">{receivedReviews.length}</p>
+                            <p className="text-slate-600">reseñas recibidas</p>
+                            <Link href={route('profiles.reviews', profile.id)} className="prolink-secondary mt-5 w-full">
+                                Ver reseñas
+                            </Link>
+                        </div>
+                    </aside>
                 </div>
-            </div>
-        </AppLayout>
+            </main>
+            <ProLinkFooter />
+        </div>
     );
 }

@@ -1,14 +1,35 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
-import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { AccountDrawer } from '@/components/account-drawer';
+import { type BreadcrumbItem as BreadcrumbItemType, type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 
-export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+export function AppSidebarHeader({ breadcrumbs: _breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+    const { auth } = usePage<SharedData>().props;
+    const user = auth.user!;
+    const links = [
+        { label: 'Dashboard', href: route('dashboard') },
+        { label: 'Explorar servicios', href: route('services.browse') },
+        { label: 'Mis reservas', href: route('bookings.index') },
+        { label: 'Reseñas', href: route('reviews.index') },
+        ...(user.role === 'professional' ? [{ label: 'Servicios', href: route('services.index') }] : []),
+    ];
     return (
-        <header className="border-b border-slate-200/70 flex h-16 shrink-0 items-center gap-2 px-6 transition-[width,height] ease-linear dark:border-white/10 md:px-4">
-            <SidebarTrigger className="-ml-2" aria-label="Abrir o cerrar navegación" />
-            <div className="h-5 w-px bg-slate-200 dark:bg-white/10" />
-            <div className="flex min-w-0 items-center gap-2">
-                <Breadcrumbs breadcrumbs={breadcrumbs} />
+        <header className="sticky top-0 z-30 flex min-h-20 items-center border-b border-blue-200 bg-white px-5 shadow-[0_3px_18px_rgba(30,64,175,.08)] lg:px-8">
+            <Link href={route('dashboard')} className="text-xl font-extrabold text-blue-700">
+                ProLink Marketplace
+            </Link>
+            <nav className="ml-auto hidden items-center gap-1 lg:flex">
+                {links.map((link) => (
+                    <Link
+                        key={link.label}
+                        href={link.href}
+                        className="rounded-lg px-3 py-2 text-sm font-bold text-slate-800 transition hover:bg-blue-100 hover:text-blue-800"
+                    >
+                        {link.label}
+                    </Link>
+                ))}
+            </nav>
+            <div className="ml-auto lg:ml-4">
+                <AccountDrawer user={user} />
             </div>
         </header>
     );

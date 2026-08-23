@@ -43,7 +43,9 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
             <form onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-slate-200">Correo electrónico</Label>
+                        <Label htmlFor="email" className="text-slate-200">
+                            Correo electrónico
+                        </Label>
                         <Input
                             id="email"
                             type="email"
@@ -58,7 +60,9 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password" className="text-slate-200">Contraseña</Label>
+                        <Label htmlFor="password" className="text-slate-200">
+                            Contraseña
+                        </Label>
                         <Input
                             id="password"
                             type="password"
@@ -74,7 +78,9 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation" className="text-slate-200">Confirma tu contraseña</Label>
+                        <Label htmlFor="password_confirmation" className="text-slate-200">
+                            Confirma tu contraseña
+                        </Label>
                         <Input
                             id="password_confirmation"
                             type="password"
@@ -88,12 +94,12 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         <InputError message={errors.password_confirmation} className="mt-2" />
                     </div>
 
-                    <Button 
-                        type="submit" 
-                        className="mt-4 w-full bg-cyan-300 text-slate-950 hover:bg-cyan-200 font-semibold rounded-full py-2.5" 
+                    <Button
+                        type="submit"
+                        className="mt-4 w-full rounded-full bg-cyan-300 py-2.5 font-semibold text-slate-950 hover:bg-cyan-200"
                         disabled={processing}
                     >
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                        {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                         Restablecer contraseña
                     </Button>
                 </div>

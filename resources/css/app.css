@@ -77,38 +77,38 @@
 }
 
 :root {
-    --background: hsl(0, 0%, 100%);
-    --foreground: hsl(0, 0%, 3.9%);
+    --background: hsl(232, 45%, 96%);
+    --foreground: hsl(230, 32%, 10%);
     --card: hsl(0, 0%, 100%);
     --card-foreground: hsl(0, 0%, 3.9%);
     --popover: hsl(0, 0%, 100%);
     --popover-foreground: hsl(0, 0%, 3.9%);
-    --primary: hsl(0, 0%, 9%);
+    --primary: hsl(220, 100%, 40%);
     --primary-foreground: hsl(0, 0%, 98%);
-    --secondary: hsl(0, 0%, 96.1%);
+    --secondary: hsl(232, 40%, 95%);
     --secondary-foreground: hsl(0, 0%, 9%);
-    --muted: hsl(0, 0%, 96.1%);
-    --muted-foreground: hsl(0, 0%, 45.1%);
-    --accent: hsl(0, 0%, 96.1%);
+    --muted: hsl(232, 40%, 96%);
+    --muted-foreground: hsl(229, 15%, 42%);
+    --accent: hsl(220, 100%, 96%);
     --accent-foreground: hsl(0, 0%, 9%);
     --destructive: hsl(0, 84.2%, 60.2%);
     --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsl(0, 0%, 92.8%);
-    --input: hsl(0, 0%, 89.8%);
-    --ring: hsl(0, 0%, 3.9%);
+    --border: hsl(229, 28%, 84%);
+    --input: hsl(229, 28%, 84%);
+    --ring: hsl(220, 100%, 45%);
     --chart-1: hsl(12, 76%, 61%);
     --chart-2: hsl(173, 58%, 39%);
     --chart-3: hsl(197, 37%, 24%);
     --chart-4: hsl(43, 74%, 66%);
     --chart-5: hsl(27, 87%, 67%);
-    --radius: 0.5rem;
-    --sidebar-background: hsl(0, 0%, 98%);
-    --sidebar-foreground: hsl(240, 5.3%, 30%);
-    --sidebar-primary: hsl(0, 0%, 10%);
+    --radius: 0.75rem;
+    --sidebar-background: hsl(240, 33%, 98%);
+    --sidebar-foreground: hsl(230, 32%, 14%);
+    --sidebar-primary: hsl(220, 100%, 45%);
     --sidebar-primary-foreground: hsl(0, 0%, 98%);
-    --sidebar-accent: hsl(0, 0%, 94%);
-    --sidebar-accent-foreground: hsl(0, 0%, 30%);
-    --sidebar-border: hsl(0, 0%, 91%);
+    --sidebar-accent: hsl(220, 100%, 95%);
+    --sidebar-accent-foreground: hsl(220, 100%, 38%);
+    --sidebar-border: hsl(229, 28%, 84%);
     --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
 }
 
@@ -153,6 +153,71 @@
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground antialiased;
+        color: #0f172a;
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    }
+
+    button,
+    a,
+    input,
+    textarea,
+    select {
+        @apply focus-visible:ring-primary/35 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none;
+    }
+}
+
+@layer components {
+    .prolink-page {
+        @apply mx-auto w-full max-w-[1320px] px-4 py-6 sm:px-6 lg:px-8 lg:py-10;
+    }
+    .prolink-panel {
+        @apply rounded-2xl border border-slate-300 bg-white text-slate-950 shadow-[0_10px_35px_rgba(30,64,175,0.09)];
+    }
+    .prolink-title {
+        @apply text-3xl font-bold tracking-[-0.035em] text-slate-950 sm:text-4xl lg:text-5xl;
+    }
+    .prolink-subtitle {
+        @apply mt-2 text-base leading-7 text-slate-700 sm:text-lg;
+    }
+    .prolink-primary {
+        @apply bg-primary inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60;
+    }
+    .prolink-secondary {
+        @apply border-border inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border bg-white px-5 font-semibold text-slate-800 transition hover:border-blue-300 hover:bg-blue-50;
+    }
+    .prolink-field {
+        @apply min-h-12 rounded-lg border-slate-700 bg-slate-900 px-4 text-white placeholder:text-slate-400 focus:border-blue-400;
+    }
+    .prolink-kicker {
+        @apply text-xs font-extrabold tracking-[0.16em] text-blue-700 uppercase;
+    }
+}
+
+@layer base {
+    input:not([type='checkbox']):not([type='radio']),
+    textarea,
+    select {
+        border-color: #334155;
+        background-color: #111827;
+        color: #ffffff;
+    }
+    input:not([type='checkbox']):not([type='radio'])::placeholder,
+    textarea::placeholder {
+        color: #94a3b8;
+        opacity: 1;
+    }
+    input:disabled,
+    textarea:disabled,
+    select:disabled {
+        background-color: #334155;
+        color: #e2e8f0;
+        opacity: 1;
+    }
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+        -webkit-text-fill-color: #ffffff;
+        box-shadow: 0 0 0 1000px #111827 inset;
     }
 }

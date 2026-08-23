@@ -1,14 +1,14 @@
-﻿import { FormEventHandler } from 'react';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Booking, BreadcrumbItem, User } from '@/types';
+﻿import InputError from '@/components/input-error';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import { Booking, User } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { AlertCircle } from 'lucide-react';
-import InputError from '@/components/input-error';
+import { FormEventHandler } from 'react';
 
 interface CreateProps {
     bookings?: Booking[];
@@ -23,9 +23,7 @@ export default function Create({ bookings = [], booking, selectedServiceId }: Cr
     const page = usePage();
     const flash = page.props.flash as { success?: string; error?: string } | undefined;
 
-    const defaultBookingId = booking
-        ? booking.id
-        : bookings.find((item) => item.service?.id === selectedServiceId)?.id ?? bookings[0]?.id;
+    const defaultBookingId = booking ? booking.id : (bookings.find((item) => item.service?.id === selectedServiceId)?.id ?? bookings[0]?.id);
 
     const { data, setData, post, processing, errors } = useForm({
         booking_id: defaultBookingId,
@@ -51,9 +49,7 @@ export default function Create({ bookings = [], booking, selectedServiceId }: Cr
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold">Crear reseña</h1>
-                        <p className="text-sm text-gray-500">
-                            Selecciona una reserva completada y califica tu experiencia.
-                        </p>
+                        <p className="text-sm text-gray-500">Selecciona una reserva completada y califica tu experiencia.</p>
                     </div>
                     <Link
                         href={route('reviews.index')}

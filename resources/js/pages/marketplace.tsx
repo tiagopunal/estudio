@@ -1,9 +1,9 @@
-﻿import { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
+﻿import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, Clock3, MapPin, Search, Star } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -80,8 +80,10 @@ export default function Marketplace() {
                 <div className="overflow-hidden rounded-[28px] border border-emerald-200/70 bg-[linear-gradient(135deg,rgba(2,6,23,0.98),rgba(6,78,59,0.92),rgba(34,211,238,0.85))] p-6 text-white shadow-[0_28px_80px_rgba(15,23,42,0.2)] dark:border-white/10">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl space-y-3">
-                            <p className="text-sm uppercase tracking-[0.3em] text-emerald-100">Marketplace local</p>
-                            <h1 className="text-3xl font-semibold sm:text-4xl">Encuentra, compara y reserva servicios cerca tuyo con un diseño más claro y moderno.</h1>
+                            <p className="text-sm tracking-[0.3em] text-emerald-100 uppercase">Marketplace local</p>
+                            <h1 className="text-3xl font-semibold sm:text-4xl">
+                                Encuentra, compara y reserva servicios cerca tuyo con un diseño más claro y moderno.
+                            </h1>
                             <p className="text-sm leading-6 text-slate-100/90">
                                 Filtra por categoría, revisa detalle y prepara tu próxima reserva sin salir de esta pantalla.
                             </p>
@@ -135,10 +137,13 @@ export default function Marketplace() {
 
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {filteredServices.map((service) => (
-                            <div key={service.id} className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_24px_60px_rgba(16,185,129,0.16)] dark:border-white/10 dark:bg-slate-900">
+                            <div
+                                key={service.id}
+                                className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_24px_60px_rgba(16,185,129,0.16)] dark:border-white/10 dark:bg-slate-900"
+                            >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
-                                        <p className="text-xs uppercase tracking-[0.2em] text-emerald-600">{service.category}</p>
+                                        <p className="text-xs tracking-[0.2em] text-emerald-600 uppercase">{service.category}</p>
                                         <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{service.title}</h2>
                                     </div>
                                     <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200">
@@ -149,30 +154,23 @@ export default function Marketplace() {
                                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{service.description}</p>
 
                                 <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
-                                    <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 text-amber-500" /> {service.rating}</span>
-                                    <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {service.location}</span>
-                                    <span className="inline-flex items-center gap-1"><Clock3 className="h-4 w-4" /> {service.price}</span>
+                                    <span className="inline-flex items-center gap-1">
+                                        <Star className="h-4 w-4 text-amber-500" /> {service.rating}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1">
+                                        <MapPin className="h-4 w-4" /> {service.location}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1">
+                                        <Clock3 className="h-4 w-4" /> {service.price}
+                                    </span>
                                 </div>
 
                                 <div className="mt-4 flex flex-wrap gap-2">
-                                    <Button
-                                        type="button"
-                                        asChild
-                                        className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
-                                    >
-                                        <Link href={route('bookings.create', { service_id: service.id })}>
-                                            Reservar ahora
-                                        </Link>
+                                    <Button type="button" asChild className="rounded-full bg-slate-950 text-white hover:bg-slate-800">
+                                        <Link href={route('bookings.create', { service_id: service.id })}>Reservar ahora</Link>
                                     </Button>
-                                    <Button
-                                        type="button"
-                                        asChild
-                                        variant="outline"
-                                        className="rounded-full border-slate-200 dark:border-white/10"
-                                    >
-                                        <Link href={route('services.show', service.id)}>
-                                            Ver detalles
-                                        </Link>
+                                    <Button type="button" asChild variant="outline" className="rounded-full border-slate-200 dark:border-white/10">
+                                        <Link href={route('services.show', service.id)}>Ver detalles</Link>
                                     </Button>
                                     <Button type="button" variant="ghost" asChild className="rounded-full">
                                         <Link href={route('reviews.demo')}>Ver reseñas</Link>
@@ -184,7 +182,9 @@ export default function Marketplace() {
 
                     {filteredServices.length === 0 && (
                         <div className="rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center dark:border-white/10 dark:bg-slate-900">
-                            <p className="text-sm text-slate-600 dark:text-slate-300">No encontramos servicios para ese filtro. Probá otra categoría o palabra clave.</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-300">
+                                No encontramos servicios para ese filtro. Probá otra categoría o palabra clave.
+                            </p>
                         </div>
                     )}
                 </div>

@@ -1,10 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Star, ChevronRight } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { ChevronRight, Star } from 'lucide-react';
 
 interface Service {
     id: number;
@@ -37,7 +37,7 @@ export default function ProfilesServices({ user, services }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Servicios de ${user.name}`} />
 
-            <div className="max-w-4xl mx-auto space-y-4">
+            <div className="mx-auto max-w-4xl space-y-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Servicios de {user.name}</h1>
                 </div>
@@ -50,19 +50,15 @@ export default function ProfilesServices({ user, services }: Props) {
                     <div className="grid gap-4">
                         {services.map((service) => (
                             <Link key={service.id} href={`/services/${service.id}`}>
-                                <Card className="overflow-hidden transition-shadow hover:shadow-lg cursor-pointer">
-                                    <div className="p-6 flex items-center justify-between">
+                                <Card className="cursor-pointer overflow-hidden transition-shadow hover:shadow-lg">
+                                    <div className="flex items-center justify-between p-6">
                                         <div className="flex-1">
                                             <h3 className="text-lg font-semibold">{service.title}</h3>
                                             <Badge className="mt-2">{service.category}</Badge>
-                                            <p className="text-gray-600 mt-2 line-clamp-2">
-                                                {service.description}
-                                            </p>
+                                            <p className="mt-2 line-clamp-2 text-gray-600">{service.description}</p>
 
-                                            <div className="flex items-center justify-between mt-4">
-                                                <div className="text-2xl font-bold text-green-600">
-                                                    ${service.price.toFixed(2)}
-                                                </div>
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <div className="text-2xl font-bold text-green-600">${service.price.toFixed(2)}</div>
                                                 {service.average_rating > 0 && (
                                                     <div className="flex items-center gap-2">
                                                         {[...Array(5)].map((_, i) => (
@@ -76,9 +72,7 @@ export default function ProfilesServices({ user, services }: Props) {
                                                                 }
                                                             />
                                                         ))}
-                                                        <span className="text-xs text-gray-600">
-                                                            ({service.reviews.length})
-                                                        </span>
+                                                        <span className="text-xs text-gray-600">({service.reviews.length})</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -91,7 +85,7 @@ export default function ProfilesServices({ user, services }: Props) {
                     </div>
                 )}
 
-                <div className="flex gap-4 mt-6">
+                <div className="mt-6 flex gap-4">
                     <a href={`/profiles/${user.id}`} className="flex-1">
                         <Button variant="outline" className="w-full">
                             Volver al Perfil

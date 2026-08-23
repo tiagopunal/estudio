@@ -26,11 +26,15 @@ export default function ForgotPassword({ status }: { status?: string }) {
             <Head title="Recuperar contraseña" />
 
             <div className="space-y-6">
-                {status && <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-3 text-sm font-medium text-emerald-300">{status}</div>}
+                {status && (
+                    <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-300">{status}</div>
+                )}
 
                 <form onSubmit={submit}>
                     <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-slate-200">Correo electrónico</Label>
+                        <Label htmlFor="email" className="text-slate-200">
+                            Correo electrónico
+                        </Label>
                         <Input
                             id="email"
                             type="email"
@@ -47,19 +51,21 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     </div>
 
                     <div className="my-6 flex items-center justify-start">
-                        <Button 
-                            className="w-full bg-cyan-300 text-slate-950 hover:bg-cyan-200 font-semibold rounded-full py-2.5" 
+                        <Button
+                            className="w-full rounded-full bg-cyan-300 py-2.5 font-semibold text-slate-950 hover:bg-cyan-200"
                             disabled={processing}
                         >
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                            {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                             Enviar enlace de recuperación
                         </Button>
                     </div>
                 </form>
 
-                <div className="text-slate-300 space-x-1 text-center text-sm">
+                <div className="space-x-1 text-center text-sm text-slate-300">
                     <span>O vuelve a</span>
-                    <TextLink href={route('login')} className="text-cyan-300 hover:text-cyan-200 font-medium">iniciar sesión</TextLink>
+                    <TextLink href={route('login')} className="font-medium text-cyan-300 hover:text-cyan-200">
+                        iniciar sesión
+                    </TextLink>
                 </div>
             </div>
         </AuthLayout>

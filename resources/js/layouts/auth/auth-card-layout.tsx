@@ -13,7 +13,7 @@ export default function AuthCardLayout({
     description?: string;
 }) {
     return (
-        <div className="min-h-svh bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.16),transparent_20%),linear-gradient(180deg,#020617_0%,#0f172a_45%,#111827_100%)] flex flex-col items-center justify-center gap-6 p-6 md:p-10 text-white">
+        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.16),transparent_20%),linear-gradient(180deg,#020617_0%,#0f172a_45%,#111827_100%)] p-6 text-white md:p-10">
             <div className="flex w-full max-w-md flex-col gap-6">
                 <Link href={route('home')} className="flex items-center gap-2 self-center font-medium">
                     <div className="flex h-9 w-9 items-center justify-center">

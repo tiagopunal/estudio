@@ -1,8 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/react';
 import { Star } from 'lucide-react';
 
 interface Review {
@@ -37,30 +37,25 @@ export default function ProfilesReviews({ user, reviews }: Props) {
         { title: 'Reseñas', href: `/profiles/${user.id}/reviews` },
     ];
 
-    const averageRating =
-        reviews.length > 0
-            ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-            : 0;
+    const averageRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : 0;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Reseñas de ${user.name}`} />
 
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="mx-auto max-w-4xl space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold">Reseñas de {user.name}</h1>
 
                     {reviews.length > 0 && (
-                        <div className="flex items-center gap-4 mt-4">
+                        <div className="mt-4 flex items-center gap-4">
                             <div className="flex items-center gap-2">
                                 {[...Array(5)].map((_, i) => (
                                     <Star
                                         key={i}
                                         size={24}
                                         className={
-                                            i < Math.round(parseFloat(averageRating as string))
-                                                ? 'fill-yellow-400 text-yellow-400'
-                                                : 'text-gray-300'
+                                            i < Math.round(parseFloat(averageRating as string)) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
                                         }
                                     />
                                 ))}
@@ -87,20 +82,14 @@ export default function ProfilesReviews({ user, reviews }: Props) {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="font-semibold">{review.user.name}</p>
-                                            <p className="text-sm text-gray-600">
-                                                en {review.service.title}
-                                            </p>
+                                            <p className="text-sm text-gray-600">en {review.service.title}</p>
                                         </div>
                                         <div className="flex gap-1">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star
                                                     key={i}
                                                     size={18}
-                                                    className={
-                                                        i < review.rating
-                                                            ? 'fill-yellow-400 text-yellow-400'
-                                                            : 'text-gray-300'
-                                                    }
+                                                    className={i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
                                                 />
                                             ))}
                                         </div>
@@ -108,9 +97,7 @@ export default function ProfilesReviews({ user, reviews }: Props) {
 
                                     <p className="text-gray-700">{review.comment}</p>
 
-                                    <p className="text-xs text-gray-500">
-                                        {new Date(review.created_at).toLocaleDateString()}
-                                    </p>
+                                    <p className="text-xs text-gray-500">{new Date(review.created_at).toLocaleDateString()}</p>
                                 </div>
                             </Card>
                         ))}

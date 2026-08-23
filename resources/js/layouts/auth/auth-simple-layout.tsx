@@ -1,4 +1,3 @@
-import AppLogoIcon from '@/components/app-logo-icon';
 import { Link } from '@inertiajs/react';
 
 interface AuthLayoutProps {
@@ -10,27 +9,30 @@ interface AuthLayoutProps {
 
 export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
     return (
-        <div className="min-h-svh bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.16),transparent_20%),linear-gradient(180deg,#020617_0%,#0f172a_45%,#111827_100%)] flex flex-col items-center justify-center gap-6 p-6 md:p-10 text-white">
-            <div className="w-full max-w-sm">
+        <div className="relative flex min-h-svh flex-col bg-[#f8f7fc] px-5 py-6">
+            <div className="flex items-center justify-between">
+                <Link href={route('home')} className="text-primary text-xl font-bold sm:text-2xl">
+                    ProLink Marketplace
+                </Link>
+                <Link href={route('home')} className="hover:text-primary text-sm font-medium text-slate-600">
+                    Volver al inicio
+                </Link>
+            </div>
+            <div className="mx-auto my-auto w-full max-w-lg py-10">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
-                        <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
-                        </Link>
-
                         <div className="space-y-2 text-center">
-                            <h1 className="text-2xl font-semibold text-white">{title}</h1>
-                            <p className="text-center text-sm text-slate-300">{description}</p>
+                            <p className="text-primary text-2xl font-bold">ProLink Marketplace</p>
+                            <h1 className="text-3xl font-bold tracking-tight text-slate-950">{title}</h1>
+                            <p className="text-center text-base text-slate-600">{description}</p>
                         </div>
                     </div>
-                    <div className="rounded-[24px] border border-cyan-300/20 bg-slate-950/40 backdrop-blur p-8 shadow-[0_28px_80px_rgba(34,211,238,0.08)]">
+                    <div className="border-border rounded-2xl border bg-white p-6 text-slate-800 shadow-[0_18px_55px_rgba(20,35,80,0.08)] sm:p-8 [&_label]:text-slate-800 [&_p]:text-slate-500">
                         {children}
                     </div>
                 </div>
             </div>
+            <p className="text-center text-xs text-slate-500">© 2026 ProLink Marketplace · Calidad y confianza local.</p>
         </div>
     );
 }

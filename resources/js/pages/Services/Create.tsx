@@ -1,12 +1,10 @@
-import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
+import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { type BreadcrumbItem } from '@/types';
-import { AlertCircle } from 'lucide-react';
-
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { BriefcaseBusiness, MapPin, Send } from 'lucide-react';
 export default function ServicesCreate() {
     const { data, setData, post, processing, errors } = useForm({
         title: '',
@@ -17,178 +15,139 @@ export default function ServicesCreate() {
         latitude: '',
         longitude: '',
     });
-
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Mis Servicios', href: '/services' },
-        { title: 'Nuevo Servicio', href: '/services/create' },
-    ];
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/services');
     };
-
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Nuevo Servicio" />
-
-            <div className="max-w-2xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">Publicar Nuevo Servicio</h1>
-
-                <Card className="p-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Título */}
-                        <div>
-                            <Label htmlFor="title">Título del Servicio</Label>
-                            <Input
-                                id="title"
-                                type="text"
-                                required
-                                minLength={5}
-                                maxLength={120}
-                                value={data.title}
-                                onChange={(e) => setData('title', e.target.value)}
-                                placeholder="Ej: Diseño de sitios web"
-                                className="mt-2"
-                            />
-                            {errors.title && (
-                                <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
-                                    <AlertCircle size={16} />
-                                    {errors.title}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Descripción */}
-                        <div>
-                            <Label htmlFor="description">Descripción</Label>
-                            <textarea
-                                id="description"
-                                value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
-                                placeholder="Describe tu servicio en detalle..."
-                                rows={5}
-                                required
-                                minLength={20}
-                                maxLength={2000}
-                                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            {errors.description && (
-                                <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
-                                    <AlertCircle size={16} />
-                                    {errors.description}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Precio */}
-                        <div>
-                            <Label htmlFor="price">Precio (USD)</Label>
-                            <Input
-                                id="price"
-                                type="number"
-                                step="0.01"
-                                required
-                                min="0.01"
-                                max="99999999.99"
-                                value={data.price}
-                                onChange={(e) => setData('price', e.target.value)}
-                                placeholder="0.00"
-                                className="mt-2"
-                            />
-                            {errors.price && (
-                                <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
-                                    <AlertCircle size={16} />
-                                    {errors.price}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Categoría */}
-                        <div>
-                            <Label htmlFor="category">Categoría</Label>
-                            <Input
-                                id="category"
-                                type="text"
-                                required
-                                minLength={3}
-                                maxLength={50}
-                                value={data.category}
-                                onChange={(e) => setData('category', e.target.value)}
-                                placeholder="Ej: Diseño, Programación, etc."
-                                className="mt-2"
-                            />
-                            {errors.category && (
-                                <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
-                                    <AlertCircle size={16} />
-                                    {errors.category}
-                                </div>
-                            )}
-                        </div>
-
-                        <div>
-                            <Label htmlFor="location">Ubicación o zona del servicio</Label>
-                            <Input
-                                id="location"
-                                type="text"
-                                maxLength={255}
-                                value={data.location}
-                                onChange={(e) => setData('location', e.target.value)}
-                                placeholder="Ej: Palermo, Ciudad de Buenos Aires"
-                                className="mt-2"
-                            />
-                            {errors.location && <p className="mt-2 text-sm text-red-600">{errors.location}</p>}
-                        </div>
-
-                        {/* Ubicación */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="latitude">Latitud (Opcional)</Label>
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Mis servicios', href: '/services' },
+                { title: 'Nuevo', href: '/services/create' },
+            ]}
+        >
+            <Head title="Crear servicio" />
+            <div className="prolink-page max-w-5xl">
+                <p className="prolink-kicker">Catálogo profesional</p>
+                <h1 className="prolink-title mt-2">Crear nuevo servicio</h1>
+                <p className="prolink-subtitle">Definí tu propuesta profesional para atraer a los mejores clientes.</p>
+                <form onSubmit={submit} className="mt-8 space-y-6">
+                    <section className="prolink-panel p-6 sm:p-8">
+                        <h2 className="flex items-center gap-3 text-xl font-bold">
+                            <BriefcaseBusiness className="text-primary" />
+                            Información básica
+                        </h2>
+                        <div className="mt-6 grid gap-5 md:grid-cols-2">
+                            <Field label="Título del servicio" error={errors.title} wide>
                                 <Input
-                                    id="latitude"
+                                    required
+                                    minLength={5}
+                                    maxLength={120}
+                                    value={data.title}
+                                    onChange={(e) => setData('title', e.target.value)}
+                                    className="prolink-field"
+                                    placeholder="Ej: Instalación eléctrica residencial"
+                                />
+                            </Field>
+                            <Field label="Categoría" error={errors.category}>
+                                <Input
+                                    required
+                                    minLength={3}
+                                    maxLength={50}
+                                    value={data.category}
+                                    onChange={(e) => setData('category', e.target.value)}
+                                    className="prolink-field"
+                                    placeholder="Electricidad"
+                                />
+                            </Field>
+                            <Field label="Precio en pesos argentinos (ARS)" error={errors.price}>
+                                <Input
+                                    type="number"
+                                    required
+                                    min="0.01"
+                                    step="0.01"
+                                    value={data.price}
+                                    onChange={(e) => setData('price', e.target.value)}
+                                    className="prolink-field"
+                                    placeholder="$ 0"
+                                />
+                            </Field>
+                            <Field label="Descripción detallada" error={errors.description} wide>
+                                <Textarea
+                                    required
+                                    minLength={20}
+                                    maxLength={2000}
+                                    rows={7}
+                                    value={data.description}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                    className="prolink-field py-3"
+                                    placeholder="Explicá qué incluye, cómo trabajás y qué puede esperar el cliente..."
+                                />
+                            </Field>
+                        </div>
+                    </section>
+                    <section className="prolink-panel p-6 sm:p-8">
+                        <h2 className="flex items-center gap-3 text-xl font-bold">
+                            <MapPin className="text-primary" />
+                            Zona del servicio
+                        </h2>
+                        <p className="mt-2 text-sm text-slate-500">
+                            El mapa se incorporará más adelante. Por ahora podés indicar una zona y, opcionalmente, sus coordenadas.
+                        </p>
+                        <div className="mt-6 grid gap-5 md:grid-cols-2">
+                            <Field label="Ciudad o zona (opcional)" error={errors.location} wide>
+                                <Input
+                                    maxLength={255}
+                                    value={data.location}
+                                    onChange={(e) => setData('location', e.target.value)}
+                                    className="prolink-field"
+                                    placeholder="Córdoba Capital"
+                                />
+                            </Field>
+                            <Field label="Latitud (opcional)" error={errors.latitude}>
+                                <Input
                                     type="number"
                                     step="0.0001"
                                     min="-90"
                                     max="90"
                                     value={data.latitude}
                                     onChange={(e) => setData('latitude', e.target.value)}
-                                    placeholder="-34.6037"
-                                    className="mt-2"
+                                    className="prolink-field"
                                 />
-                                {errors.latitude && <p className="mt-2 text-sm text-red-600">{errors.latitude}</p>}
-                            </div>
-                            <div>
-                                <Label htmlFor="longitude">Longitud (Opcional)</Label>
+                            </Field>
+                            <Field label="Longitud (opcional)" error={errors.longitude}>
                                 <Input
-                                    id="longitude"
                                     type="number"
                                     step="0.0001"
                                     min="-180"
                                     max="180"
                                     value={data.longitude}
                                     onChange={(e) => setData('longitude', e.target.value)}
-                                    placeholder="-58.3816"
-                                    className="mt-2"
+                                    className="prolink-field"
                                 />
-                                {errors.longitude && <p className="mt-2 text-sm text-red-600">{errors.longitude}</p>}
-                            </div>
+                            </Field>
                         </div>
-
-                        {/* Botones */}
-                        <div className="flex gap-4 pt-4">
-                            <Button type="submit" disabled={processing} className="flex-1">
-                                {processing ? 'Publicando...' : 'Publicar Servicio'}
-                            </Button>
-                            <a href="/services">
-                                <Button type="button" variant="outline">
-                                    Cancelar
-                                </Button>
-                            </a>
-                        </div>
-                    </form>
-                </Card>
+                    </section>
+                    <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+                        <Link href={route('services.index')} className="prolink-secondary">
+                            Cancelar
+                        </Link>
+                        <button disabled={processing} className="prolink-primary">
+                            <Send />
+                            {processing ? 'Publicando...' : 'Publicar servicio'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </AppLayout>
+    );
+}
+function Field({ label, error, children, wide = false }: { label: string; error?: string; children: React.ReactNode; wide?: boolean }) {
+    return (
+        <div className={wide ? 'md:col-span-2' : ''}>
+            <Label className="mb-2 block">{label}</Label>
+            {children}
+            <InputError message={error} className="mt-2" />
+        </div>
     );
 }

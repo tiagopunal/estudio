@@ -1,9 +1,9 @@
-﻿import { Button } from '@/components/ui/button';
-import ReviewCard from '@/components/review-card';
+﻿import ReviewCard from '@/components/review-card';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Review, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, MessageSquareText, ShieldCheck, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, MessageSquareText, ShieldCheck, Star } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -107,10 +107,13 @@ export default function ReviewsDemo() {
                 <div className="overflow-hidden rounded-[28px] border border-amber-200/70 bg-[linear-gradient(135deg,rgba(2,6,23,0.98),rgba(120,53,15,0.9),rgba(245,158,11,0.8))] p-6 text-white shadow-[0_28px_80px_rgba(120,53,15,0.22)] dark:border-white/10">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl space-y-3">
-                            <p className="text-sm uppercase tracking-[0.3em] text-amber-100">Reseñas destacadas</p>
-                            <h1 className="text-3xl font-semibold sm:text-4xl">Descubre qué dice la comunidad sobre cada servicio y toma una decisión con confianza.</h1>
+                            <p className="text-sm tracking-[0.3em] text-amber-100 uppercase">Reseñas destacadas</p>
+                            <h1 className="text-3xl font-semibold sm:text-4xl">
+                                Descubre qué dice la comunidad sobre cada servicio y toma una decisión con confianza.
+                            </h1>
                             <p className="text-sm leading-6 text-slate-100/90">
-                                Esta vista está pensada para mostrar experiencias reales, potencias la confianza del usuario y deja el flujo listo para conectar con tu API.
+                                Esta vista está pensada para mostrar experiencias reales, potencias la confianza del usuario y deja el flujo listo
+                                para conectar con tu API.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
@@ -142,7 +145,9 @@ export default function ReviewsDemo() {
                         <div className="mt-5 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
                             <p className="text-sm font-semibold text-slate-900 dark:text-white">Usuario activo</p>
                             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                {auth?.user?.name ? `Ahora estás navegando como ${auth.user.name}.` : 'Aún no has iniciado sesión, pero puedes revisar la experiencia pública.'}
+                                {auth?.user?.name
+                                    ? `Ahora estás navegando como ${auth.user.name}.`
+                                    : 'Aún no has iniciado sesión, pero puedes revisar la experiencia pública.'}
                             </p>
                             <div className="mt-3 flex items-center gap-2 text-sm text-emerald-600">
                                 <ShieldCheck className="h-4 w-4" />

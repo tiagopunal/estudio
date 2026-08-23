@@ -1,16 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
-import { Star, Edit, Trash2, ChevronRight } from 'lucide-react';
-
-interface Review {
-    id: number;
-    rating: number;
-}
-
+import { Head, Link } from '@inertiajs/react';
+import { BriefcaseBusiness, Edit3, Eye, Plus, Star } from 'lucide-react';
 interface Service {
     id: number;
     title: string;
@@ -18,96 +8,83 @@ interface Service {
     price: number;
     category: string;
     average_rating: number;
-    reviews: Review[];
-    bookings: any[];
+    reviews: unknown[];
+    bookings: unknown[];
 }
-
-interface Props {
-    services: Service[];
-}
-
-export default function ServicesIndex({ services }: Props) {
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Mis Servicios', href: '/services' },
-    ];
-
+export default function ServicesIndex({ services }: { services: Service[] }) {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Mis Servicios" />
-
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold">Mis Servicios</h1>
-                    <Link href="/services/create">
-                        <Button>Nuevo Servicio</Button>
+        <AppLayout breadcrumbs={[{ title: 'Mis servicios', href: '/services' }]}>
+            <Head title="Mis servicios" />
+            <div className="prolink-page">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p className="prolink-kicker">Catálogo profesional</p>
+                        <h1 className="prolink-title mt-2">Mis servicios</h1>
+                        <p className="prolink-subtitle">Gestioná y optimizá tu oferta profesional.</p>
+                    </div>
+                    <Link href={route('services.create')} className="prolink-primary">
+                        <Plus />
+                        Añadir servicio
                     </Link>
                 </div>
-
+                <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                    <div className="prolink-panel p-6">
+                        <Eye className="text-primary" />
+                        <p className="mt-4 text-sm text-slate-500">Servicios publicados</p>
+                        <p className="mt-1 text-3xl font-bold">{services.length}</p>
+                    </div>
+                    <div className="prolink-panel p-6">
+                        <BriefcaseBusiness className="text-primary" />
+                        <p className="mt-4 text-sm text-slate-500">Reservas vinculadas</p>
+                        <p className="mt-1 text-3xl font-bold">{services.reduce((n, s) => n + s.bookings.length, 0)}</p>
+                    </div>
+                    <div className="prolink-panel p-6">
+                        <Star className="text-primary" />
+                        <p className="mt-4 text-sm text-slate-500">Reseñas recibidas</p>
+                        <p className="mt-1 text-3xl font-bold">{services.reduce((n, s) => n + s.reviews.length, 0)}</p>
+                    </div>
+                </div>
                 {services.length === 0 ? (
-                    <Card className="p-12 text-center">
-                        <p className="text-gray-500">No tienes servicios publicados</p>
-                        <Link href="/services/create">
-                            <Button className="mt-4">Publicar primer servicio</Button>
+                    <div className="prolink-panel mt-8 p-12 text-center">
+                        <BriefcaseBusiness className="mx-auto size-12 text-blue-300" />
+                        <h2 className="mt-4 text-xl font-bold">Todavía no publicaste servicios</h2>
+                        <p className="mt-2 text-slate-600">Creá tu primera propuesta y empezá a recibir reservas.</p>
+                        <Link href={route('services.create')} className="prolink-primary mt-6">
+                            Publicar primer servicio
                         </Link>
-                    </Card>
+                    </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="prolink-panel mt-8 overflow-hidden">
+                        <div className="hidden grid-cols-[1.6fr_.7fr_.5fr_.55fr] gap-4 border-b bg-[#f4f4fc] px-6 py-4 text-xs font-bold tracking-wider text-slate-500 uppercase md:grid">
+                            <span>Servicio</span>
+                            <span>Categoría</span>
+                            <span>Precio</span>
+                            <span>Acciones</span>
+                        </div>
                         {services.map((service) => (
-                            <Card key={service.id} className="overflow-hidden">
-                                <div className="p-6">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div>
-                                            <h3 className="text-lg font-semibold">{service.title}</h3>
-                                            <Badge className="mt-2">{service.category}</Badge>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Link href={`/services/${service.id}/edit`}>
-                                                <Button size="sm" variant="outline">
-                                                    <Edit size={16} />
-                                                </Button>
-                                            </Link>
-                                            <Button size="sm" variant="destructive">
-                                                <Trash2 size={16} />
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <p className="text-gray-600 mb-4">{service.description}</p>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-1">
-                                            <div className="text-2xl font-bold">
-                                                ${service.price.toFixed(2)}
-                                            </div>
-                                            {service.average_rating > 0 && (
-                                                <div className="flex items-center gap-2">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            size={16}
-                                                            className={
-                                                                i < Math.round(service.average_rating)
-                                                                    ? 'fill-yellow-400 text-yellow-400'
-                                                                    : 'text-gray-300'
-                                                            }
-                                                        />
-                                                    ))}
-                                                    <span className="text-sm text-gray-600">
-                                                        ({service.reviews.length})
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <Link href={`/services/${service.id}`}>
-                                            <Button variant="ghost">
-                                                <ChevronRight size={20} />
-                                            </Button>
-                                        </Link>
-                                    </div>
+                            <article
+                                key={service.id}
+                                className="border-border grid gap-4 border-b p-6 last:border-0 md:grid-cols-[1.6fr_.7fr_.5fr_.55fr] md:items-center"
+                            >
+                                <div>
+                                    <h2 className="font-bold">{service.title}</h2>
+                                    <p className="mt-1 line-clamp-1 text-sm text-slate-500">{service.description}</p>
                                 </div>
-                            </Card>
+                                <span className="text-primary w-fit rounded-full bg-blue-50 px-3 py-1 text-xs font-bold">{service.category}</span>
+                                <span className="text-primary font-bold">${Number(service.price).toFixed(2)}</span>
+                                <div className="flex gap-2">
+                                    <Link href={route('services.show', service.id)} className="rounded-lg border p-2 text-slate-600" aria-label="Ver">
+                                        <Eye className="size-4" />
+                                    </Link>
+                                    <Link
+                                        href={route('services.edit', service.id)}
+                                        className="text-primary rounded-lg border p-2"
+                                        aria-label="Editar"
+                                    >
+                                        <Edit3 className="size-4" />
+                                    </Link>
+                                </div>
+                            </article>
                         ))}
                     </div>
                 )}

@@ -16,7 +16,11 @@ export function UserInfo({ user, showEmail = false, showRole = true }: { user: U
             <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 {showEmail && <span className="text-muted-foreground truncate text-xs">{user.email}</span>}
-                {showRole && <span className="truncate text-xs font-medium text-cyan-600 dark:text-cyan-300">{user.role === 'professional' ? 'Profesional' : 'Cliente'}</span>}
+                {showRole && (
+                    <span className="truncate text-xs font-medium text-cyan-600 dark:text-cyan-300">
+                        {user.role === 'professional' ? 'Profesional' : 'Cliente'}
+                    </span>
+                )}
             </div>
         </>
     );
