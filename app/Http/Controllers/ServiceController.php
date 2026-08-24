@@ -15,12 +15,30 @@ class ServiceController extends Controller
     | LISTAR SERVICIOS DEL USUARIO AUTENTICADO
     |--------------------------------------------------------------------------
     */
-    public function index()
+    public function index(Request $request)
     {
-        $services = Service::where('user_id', auth()->id())
-            ->with('reviews', 'bookings')
-            ->latest()
-            ->get();
+        $query = Service::with('reviews', 'bookings')->latest();
+
+        if ($request->filled('search') || $request->filled('category')) {
+            $query->where('status', 'active');
+
+            if ($request->filled('search')) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('category', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->filled('category')) {
+                $query->where('category', $request->string('category')->toString());
+            }
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        $services = $query->get();
 
         return Inertia::render('Services/Index', [
             'services' => $services,
