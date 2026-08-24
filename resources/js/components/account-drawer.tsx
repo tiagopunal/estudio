@@ -1,17 +1,16 @@
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BriefcaseBusiness, CalendarDays, Compass, House, LogOut, Settings, Star, UserRound, X } from 'lucide-react';
+import { CalendarDays, Compass, House, LogOut, Settings, Star, UserRound, X } from 'lucide-react';
 import { useState } from 'react';
 
 export function AccountDrawer({ user }: { user: User }) {
     const [open, setOpen] = useState(false);
     const avatar = user.profile?.avatar ? `/storage/${user.profile.avatar}` : user.avatar;
     const links = [
-        { label: 'Dashboard', href: route('dashboard'), icon: House },
+        { label: 'Inicio', href: route('home'), icon: House },
         { label: 'Explorar servicios', href: route('services.browse'), icon: Compass },
         { label: 'Mis reservas', href: route('bookings.index'), icon: CalendarDays },
         { label: 'Reseñas', href: route('reviews.index'), icon: Star },
-        ...(user.role === 'professional' ? [{ label: 'Mis servicios', href: route('services.index'), icon: BriefcaseBusiness }] : []),
         { label: 'Mi perfil', href: route('marketplace-profile.edit'), icon: UserRound },
     ];
     const close = () => setOpen(false);

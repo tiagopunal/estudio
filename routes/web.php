@@ -11,9 +11,7 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::get('marketplace', function () {
-    return Inertia::render('marketplace');
-})->name('marketplace');
+Route::get('marketplace', [ServiceController::class, 'search'])->name('marketplace');
 
 Route::get('reviews-demo', function () {
     return Inertia::render('reviews-demo');

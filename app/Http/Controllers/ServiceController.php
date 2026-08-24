@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveServiceRequest;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ServiceController extends Controller
@@ -131,6 +132,7 @@ class ServiceController extends Controller
             'category' => ['nullable', 'string', 'max:50'],
             'min_price' => ['nullable', 'numeric', 'min:0'],
             'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
+            'sort' => ['nullable', 'in:price_asc,price_desc'],
         ]);
 
         // El catálogo público también muestra los servicios del usuario actual.
@@ -145,11 +147,17 @@ class ServiceController extends Controller
 
         // Filtrar por búsqueda de texto
         if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+            $terms = preg_split('/\s+/', trim($filters['search']), -1, PREG_SPLIT_NO_EMPTY);
+            $normalizeColumn = static fn (string $column): string => "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER({$column}), 'á', 'a'), 'é', 'e'), 'í', 'i'), 'ó', 'o'), 'ú', 'u'), 'ü', 'u'), 'ñ', 'n')";
+
+            foreach ($terms as $term) {
+                $normalizedTerm = Str::ascii(Str::lower($term));
+                $query->where(function ($q) use ($normalizedTerm, $normalizeColumn) {
+                    foreach (['title', 'description', 'category'] as $column) {
+                        $q->orWhereRaw($normalizeColumn($column).' LIKE ?', ["%{$normalizedTerm}%"]);
+                    }
+                });
+            }
         }
 
         // Filtrar por precio
@@ -161,11 +169,27 @@ class ServiceController extends Controller
             $query->where('price', '<=', $filters['max_price']);
         }
 
-        $services = $query->latest()->paginate(12);
+        if (($filters['sort'] ?? null) === 'price_asc') {
+            $query->orderBy('price');
+        } elseif (($filters['sort'] ?? null) === 'price_desc') {
+            $query->orderByDesc('price');
+        } else {
+            $query->latest();
+        }
+
+        $services = $query->paginate(12)->withQueryString();
+        $categories = Service::query()
+            ->where('status', 'active')
+            ->whereNotNull('category')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category')
+            ->values();
 
         return Inertia::render('Services/Browse', [
             'services' => $services,
             'filters' => $filters,
+            'categories' => $categories,
         ]);
     }
 }

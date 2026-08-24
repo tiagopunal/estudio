@@ -17,8 +17,8 @@ import AppLogoIcon from './app-logo-icon';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        url: '/dashboard',
+        title: 'Inicio',
+        url: '/',
         icon: LayoutGrid,
     },
     {

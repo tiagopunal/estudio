@@ -3,7 +3,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BriefcaseBusiness, CalendarDays, Compass, House, LogOut, Settings, Star, UserRound } from 'lucide-react';
+import { CalendarDays, Compass, House, LogOut, Settings, Star, UserRound } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -22,7 +22,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={route('dashboard')} as="button" onClick={cleanup}>
+                    <Link className="block w-full" href={route('home')} as="button" onClick={cleanup}>
                         <House className="mr-2" />
                         Inicio
                     </Link>
@@ -42,28 +42,20 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('reviews.index')} as="button" onClick={cleanup}>
                         <Star className="mr-2" />
-                        Opiniones y reseñas
+                        Reseñas
                     </Link>
                 </DropdownMenuItem>
-                {user.role === 'professional' && (
-                    <DropdownMenuItem asChild>
-                        <Link className="block w-full" href={route('services.index')} as="button" onClick={cleanup}>
-                            <BriefcaseBusiness className="mr-2" />
-                            Mis servicios
-                        </Link>
-                    </DropdownMenuItem>
-                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('marketplace-profile.edit')} as="button" prefetch onClick={cleanup}>
                         <UserRound className="mr-2" />
-                        Mi perfil profesional
+                        Mi perfil
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
-                        Cuenta y seguridad
+                        Configuración
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>

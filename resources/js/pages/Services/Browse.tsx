@@ -3,6 +3,7 @@ import { ProLinkHeader } from '@/components/prolink-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import InputError from '@/components/input-error';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowRight, BriefcaseBusiness, Search, SlidersHorizontal, Star, UserRound } from 'lucide-react';
 
@@ -23,19 +24,21 @@ interface PaginationLink {
 }
 interface Props {
     services: { data: Service[]; links: PaginationLink[]; total: number };
-    filters: { search?: string; category?: string; min_price?: string; max_price?: string };
+    filters: { search?: string; category?: string; min_price?: string; max_price?: string; sort?: 'price_asc' | 'price_desc' };
+    categories: string[];
 }
 
-export default function ServicesBrowse({ services, filters }: Props) {
-    const { data, setData, get, processing } = useForm({
+export default function ServicesBrowse({ services, filters, categories }: Props) {
+    const { data, setData, get, processing, errors } = useForm({
         search: filters.search || '',
         category: filters.category || '',
         min_price: filters.min_price || '',
         max_price: filters.max_price || '',
+        sort: filters.sort || '',
     });
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        get('/services/browse', { preserveScroll: true });
+        get(window.location.pathname === '/marketplace' ? '/marketplace' : '/services/browse', { preserveScroll: true });
     };
     return (
         <div className="flex min-h-screen flex-col bg-[#f8f7fc]">
@@ -47,7 +50,7 @@ export default function ServicesBrowse({ services, filters }: Props) {
                     <h1 className="prolink-title mt-2">Explorá servicios</h1>
                     <p className="prolink-subtitle">Encontrá profesionales, compará opciones y elegí con confianza.</p>
                 </div>
-                <form onSubmit={submit} className="prolink-panel mt-8 grid gap-4 p-5 lg:grid-cols-[1.6fr_1fr_.7fr_.7fr_auto] lg:items-end">
+                <form onSubmit={submit} className="prolink-panel mt-8 grid gap-4 p-5 lg:grid-cols-[1.6fr_1fr_1.2fr_auto] lg:items-end">
                     <div>
                         <Label htmlFor="search">Servicio</Label>
                         <div className="relative mt-2">
@@ -63,35 +66,67 @@ export default function ServicesBrowse({ services, filters }: Props) {
                     </div>
                     <div>
                         <Label htmlFor="category">Categoría</Label>
-                        <Input
+                        <select
                             id="category"
                             value={data.category}
                             onChange={(e) => setData('category', e.target.value)}
                             className="prolink-field mt-2"
-                            placeholder="Todas"
-                        />
+                        >
+                            <option value="">Todas</option>
+                            {categories.map((category) => (
+                                <option key={category} value={category}>
+                                    {category}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div>
-                        <Label htmlFor="min">Precio mín.</Label>
-                        <Input
-                            id="min"
-                            type="number"
-                            min="0"
-                            value={data.min_price}
-                            onChange={(e) => setData('min_price', e.target.value)}
-                            className="prolink-field mt-2"
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="max">Precio máx.</Label>
-                        <Input
-                            id="max"
-                            type="number"
-                            min="0"
-                            value={data.max_price}
-                            onChange={(e) => setData('max_price', e.target.value)}
-                            className="prolink-field mt-2"
-                        />
+                        <Label htmlFor="price">Precio</Label>
+                        <details className="relative mt-2">
+                            <summary id="price" className="prolink-field flex cursor-pointer list-none items-center justify-between">
+                                <span>{data.min_price || data.max_price ? `${data.min_price || 'Sin mínimo'} - ${data.max_price || 'Sin máximo'}` : 'Cualquier precio'}</span>
+                                <SlidersHorizontal className="size-4" />
+                            </summary>
+                            <div className="absolute right-0 z-10 mt-2 grid w-72 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-white/10 dark:bg-slate-900">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                        Desde
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={data.min_price}
+                                            onChange={(e) => setData('min_price', e.target.value)}
+                                            className="prolink-field mt-1"
+                                        />
+                                    </label>
+                                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                        Hasta
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={data.max_price}
+                                            onChange={(e) => setData('max_price', e.target.value)}
+                                            className="prolink-field mt-1"
+                                        />
+                                    </label>
+                                </div>
+                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                    Ordenar por precio
+                                    <select
+                                        value={data.sort}
+                                        onChange={(e) => setData('sort', e.target.value as '' | 'price_asc' | 'price_desc')}
+                                        className="prolink-field mt-1 w-full"
+                                    >
+                                        <option value="">Predeterminado</option>
+                                        <option value="price_asc">Menor a mayor</option>
+                                        <option value="price_desc">Mayor a menor</option>
+                                    </select>
+                                </label>
+                                <InputError message={errors.min_price || errors.max_price} />
+                            </div>
+                        </details>
                     </div>
                     <Button disabled={processing} className="prolink-primary">
                         <SlidersHorizontal />
@@ -103,7 +138,7 @@ export default function ServicesBrowse({ services, filters }: Props) {
                         <strong className="text-slate-950">{services.total}</strong> resultados disponibles
                     </p>
                     {Object.values(filters).some(Boolean) && (
-                        <Link href="/services/browse" className="text-primary text-sm font-semibold">
+                        <Link href={window.location.pathname} className="text-primary text-sm font-semibold">
                             Limpiar filtros
                         </Link>
                     )}

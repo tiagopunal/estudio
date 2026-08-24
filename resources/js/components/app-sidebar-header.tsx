@@ -6,7 +6,7 @@ export function AppSidebarHeader({ breadcrumbs: _breadcrumbs = [] }: { breadcrum
     const { auth } = usePage<SharedData>().props;
     const user = auth.user!;
     const links = [
-        { label: 'Dashboard', href: route('dashboard') },
+        { label: 'Inicio', href: route('home') },
         { label: 'Explorar servicios', href: route('services.browse') },
         { label: 'Mis reservas', href: route('bookings.index') },
         { label: 'Reseñas', href: route('reviews.index') },
