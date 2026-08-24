@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\StoreRegisterRequest;
 use App\Models\User;
@@ -29,10 +30,13 @@ class RegisteredUserController extends Controller
      */
     public function store(StoreRegisterRequest $request): RedirectResponse
     {
+        $validated = $request->validated();
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'role' => Role::CLIENT,
+            'password' => Hash::make($validated['password']),
         ]);
 
         event(new Registered($user));

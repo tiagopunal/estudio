@@ -9,9 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('role', 20)->default('client')->index();
-        });
+        if (! Schema::hasColumn('users', 'role')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('role', 20)->default('client')->index();
+            });
+        }
 
         DB::table('users')
             ->whereNotExists(function ($query) {
@@ -41,8 +43,5 @@ return new class extends Migration
             $table->dropUnique(['user_id']);
         });
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
     }
 };
