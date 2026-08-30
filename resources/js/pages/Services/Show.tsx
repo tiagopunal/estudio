@@ -1,3 +1,4 @@
+import { ServiceMap } from '@/components/maps/service-map';
 import { ProLinkFooter } from '@/components/prolink-footer';
 import { ProLinkHeader } from '@/components/prolink-header';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -15,6 +16,7 @@ interface Service {
     description: string;
     price: number;
     category: string;
+    location?: string | null;
     average_rating: number;
     latitude?: number;
     longitude?: number;
@@ -115,6 +117,30 @@ export default function ServicesShow({ service, isOwner }: Props) {
                         </div>
                     </aside>
                 </div>
+                {service.latitude != null && service.longitude != null && (
+                    <section className="mt-8">
+                        <div className="mb-4">
+                            <p className="prolink-kicker">Ubicación</p>
+                            <h2 className="mt-2 text-2xl font-bold text-slate-950">Dónde se presta este servicio</h2>
+                            {service.location && <p className="mt-1 text-slate-600">{service.location}</p>}
+                        </div>
+                        <ServiceMap
+                            className="h-96"
+                            services={[
+                                {
+                                    id: service.id,
+                                    title: service.title,
+                                    category: service.category,
+                                    price: service.price,
+                                    location: service.location,
+                                    latitude: service.latitude,
+                                    longitude: service.longitude,
+                                    user: { name: service.user.name },
+                                },
+                            ]}
+                        />
+                    </section>
+                )}
             </main>
             <ProLinkFooter />
             {deleteOpen && (
