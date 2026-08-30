@@ -12,6 +12,7 @@ La plataforma usa Leaflet, React Leaflet y las teselas de OpenStreetMap. No requ
 - Círculo visual del radio seleccionado.
 - Selector de coordenadas al crear o editar un servicio.
 - Selector de ubicación del perfil profesional.
+- Búsqueda manual de direcciones limitada a Argentina.
 - Mapas en el detalle del servicio y en el perfil público.
 - Los servicios sin coordenadas siguen disponibles en la lista, pero no aparecen en el mapa.
 
@@ -27,6 +28,12 @@ npm run dev
 php artisan serve
 ```
 
+El proveedor de búsqueda de direcciones se puede cambiar sin modificar el código:
+
+```env
+VITE_GEOCODING_SEARCH_URL=https://nominatim.openstreetmap.org/search
+```
+
 Si una base local antigua informa que la columna `role` ya existe por una migración pendiente de otra rama, se puede aplicar solamente la migración geográfica:
 
 ```bash
@@ -38,7 +45,7 @@ php artisan migrate --path=database/migrations/2026_08_30_000001_add_coordinates
 1. En `Explorar servicios`, seleccionar `Mapa` para ver los servicios que tienen coordenadas.
 2. Presionar `Usar mi ubicación` y aceptar el permiso del navegador para buscar por cercanía.
 3. Elegir un radio y volver a aplicar el filtro cuando se quiera modificar la distancia.
-4. Al publicar o editar un servicio, hacer clic en el mapa o usar la ubicación del dispositivo.
+4. Al publicar o editar un servicio, buscar una dirección argentina, hacer clic en el mapa o usar la ubicación del dispositivo.
 
 ## Privacidad
 
@@ -48,10 +55,11 @@ php artisan migrate --path=database/migrations/2026_08_30_000001_add_coordinates
 
 ## Límites actuales
 
-- No hay geocodificación automática de texto: escribir una ciudad no mueve el marcador por sí solo.
+- La búsqueda de direcciones se ejecuta únicamente al presionar el botón; no funciona como autocompletado.
 - No hay rutas, tiempos de viaje ni navegación GPS.
 - El radio representa distancia geográfica aproximada, no distancia por calles.
-- Para un despliegue de alto tráfico se deberá revisar la política del proveedor de teselas o contratar uno dedicado.
+- El servidor público de Nominatim es adecuado para esta demostración y exige como máximo una consulta por segundo. Para producción o alto tráfico se debe configurar un proveedor dedicado mediante `VITE_GEOCODING_SEARCH_URL`.
+- Las consultas y los mapas muestran atribución a OpenStreetMap.
 
 ## Verificación
 

@@ -243,6 +243,7 @@ export default function ProfilesEdit({ profile }: Props) {
                                 <LocationPicker
                                     latitude={data.latitude}
                                     longitude={data.longitude}
+                                    title="Ubicación profesional"
                                     onChange={(latitude, longitude) => setData((current) => ({ ...current, latitude, longitude }))}
                                 />
                             </div>
