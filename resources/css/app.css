@@ -1,10 +1,41 @@
 @import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
 
 @plugin 'tailwindcss-animate';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
 @custom-variant dark (&:is(.dark *));
+
+.prolink-map .leaflet-control-zoom a {
+    color: #0f172a;
+}
+
+.prolink-map .leaflet-popup-content-wrapper {
+    border-radius: 16px;
+}
+
+.prolink-map-marker {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 3px solid white;
+    border-radius: 9999px;
+    background: #0b4dd8;
+    color: white;
+    font-weight: 800;
+    box-shadow: 0 8px 20px rgb(15 23 42 / 30%);
+}
+
+.prolink-user-marker {
+    width: 18px;
+    height: 18px;
+    border: 4px solid white;
+    border-radius: 9999px;
+    background: #ef4444;
+    box-shadow: 0 0 0 4px rgb(239 68 68 / 25%);
+}
 
 @theme {
     --font-sans:
