@@ -218,12 +218,17 @@ class ServiceController extends Controller
             $query->latest();
         }
 
+        $mapServices = (clone $query)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->limit(200)
+            ->get();
         $services = $query->paginate(12)->withQueryString();
 
         if (isset($filters['latitude'], $filters['longitude'], $filters['radius'])) {
             $originLatitude = (float) $filters['latitude'];
             $originLongitude = (float) $filters['longitude'];
-            $services->through(function (Service $service) use ($originLatitude, $originLongitude) {
+            $appendDistance = function (Service $service) use ($originLatitude, $originLongitude) {
                 $latitudeDelta = deg2rad((float) $service->latitude - $originLatitude);
                 $longitudeDelta = deg2rad((float) $service->longitude - $originLongitude);
                 $a = sin($latitudeDelta / 2) ** 2
@@ -232,7 +237,10 @@ class ServiceController extends Controller
                 $service->setAttribute('distance_km', round(6371 * 2 * atan2(sqrt($a), sqrt(1 - $a)), 1));
 
                 return $service;
-            });
+            };
+
+            $services->through($appendDistance);
+            $mapServices->each($appendDistance);
         }
         $categories = Service::query()
             ->where('status', 'active')
@@ -244,6 +252,7 @@ class ServiceController extends Controller
 
         return Inertia::render('Services/Browse', [
             'services' => $services,
+            'mapServices' => $mapServices,
             'filters' => $filters,
             'categories' => $categories,
         ]);

@@ -1,11 +1,13 @@
+import InputError from '@/components/input-error';
+import { ServiceMap, type MapService } from '@/components/maps/service-map';
 import { ProLinkFooter } from '@/components/prolink-footer';
 import { ProLinkHeader } from '@/components/prolink-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowRight, BriefcaseBusiness, Search, SlidersHorizontal, Star, UserRound } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ArrowRight, BriefcaseBusiness, List, LocateFixed, Map, Search, SlidersHorizontal, Star, UserRound } from 'lucide-react';
+import { useState } from 'react';
 
 interface Service {
     id: number;
@@ -14,6 +16,10 @@ interface Service {
     price: number;
     category: string;
     average_rating: number;
+    location?: string | null;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
+    distance_km?: number | null;
     reviews: unknown[];
     user: { id: number; name: string };
 }
@@ -24,21 +30,56 @@ interface PaginationLink {
 }
 interface Props {
     services: { data: Service[]; links: PaginationLink[]; total: number };
-    filters: { search?: string; category?: string; min_price?: string; max_price?: string; sort?: 'price_asc' | 'price_desc' };
+    mapServices: MapService[];
+    filters: {
+        search?: string;
+        category?: string;
+        min_price?: string;
+        max_price?: string;
+        sort?: 'price_asc' | 'price_desc';
+        latitude?: string;
+        longitude?: string;
+        radius?: string;
+    };
     categories: string[];
 }
 
-export default function ServicesBrowse({ services, filters, categories }: Props) {
+export default function ServicesBrowse({ services, mapServices, filters, categories }: Props) {
+    const [view, setView] = useState<'list' | 'map'>(filters.latitude ? 'map' : 'list');
+    const [locationStatus, setLocationStatus] = useState('');
     const { data, setData, get, processing, errors } = useForm({
         search: filters.search || '',
         category: filters.category || '',
         min_price: filters.min_price || '',
         max_price: filters.max_price || '',
         sort: filters.sort || '',
+        latitude: filters.latitude || '',
+        longitude: filters.longitude || '',
+        radius: filters.radius || '50',
     });
+    const endpoint = window.location.pathname === '/marketplace' ? '/marketplace' : '/services/browse';
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        get(window.location.pathname === '/marketplace' ? '/marketplace' : '/services/browse', { preserveScroll: true });
+        get(endpoint, { preserveScroll: true });
+    };
+    const locate = () => {
+        if (!navigator.geolocation) {
+            setLocationStatus('Tu dispositivo no admite geolocalización.');
+            return;
+        }
+        setLocationStatus('Buscando tu ubicación…');
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                const latitude = coords.latitude.toFixed(7);
+                const longitude = coords.longitude.toFixed(7);
+                setData((current) => ({ ...current, latitude, longitude }));
+                setView('map');
+                setLocationStatus('Ubicación encontrada.');
+                router.get(endpoint, { ...data, latitude, longitude, radius: data.radius || '50' }, { preserveScroll: true, preserveState: true });
+            },
+            () => setLocationStatus('No pudimos acceder a tu ubicación. Revisá el permiso del navegador.'),
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+        );
     };
     return (
         <div className="flex min-h-screen flex-col bg-[#f8f7fc]">
@@ -84,7 +125,11 @@ export default function ServicesBrowse({ services, filters, categories }: Props)
                         <Label htmlFor="price">Precio</Label>
                         <details className="relative mt-2">
                             <summary id="price" className="prolink-field flex cursor-pointer list-none items-center justify-between">
-                                <span>{data.min_price || data.max_price ? `${data.min_price || 'Sin mínimo'} - ${data.max_price || 'Sin máximo'}` : 'Cualquier precio'}</span>
+                                <span>
+                                    {data.min_price || data.max_price
+                                        ? `${data.min_price || 'Sin mínimo'} - ${data.max_price || 'Sin máximo'}`
+                                        : 'Cualquier precio'}
+                                </span>
                                 <SlidersHorizontal className="size-4" />
                             </summary>
                             <div className="absolute right-0 z-10 mt-2 grid w-72 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-white/10 dark:bg-slate-900">
@@ -133,6 +178,44 @@ export default function ServicesBrowse({ services, filters, categories }: Props)
                         {processing ? 'Buscando' : 'Filtrar'}
                     </Button>
                 </form>
+                <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-blue-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Button type="button" onClick={locate} variant="outline" className="border-blue-300 text-blue-800">
+                            <LocateFixed className="size-4" /> Usar mi ubicación
+                        </Button>
+                        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                            Radio
+                            <select
+                                value={data.radius}
+                                onChange={(e) => setData('radius', e.target.value)}
+                                className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-slate-900"
+                            >
+                                {[10, 25, 50, 100, 250, 500].map((radius) => (
+                                    <option key={radius} value={radius}>
+                                        {radius} km
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        {locationStatus && <span className="text-sm text-slate-600">{locationStatus}</span>}
+                    </div>
+                    <div className="flex rounded-xl bg-blue-50 p-1">
+                        <button
+                            type="button"
+                            onClick={() => setView('list')}
+                            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold ${view === 'list' ? 'bg-blue-700 text-white' : 'text-blue-800'}`}
+                        >
+                            <List className="size-4" /> Lista
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setView('map')}
+                            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold ${view === 'map' ? 'bg-blue-700 text-white' : 'text-blue-800'}`}
+                        >
+                            <Map className="size-4" /> Mapa
+                        </button>
+                    </div>
+                </div>
                 <div className="mt-8 flex items-center justify-between">
                     <p className="text-slate-600">
                         <strong className="text-slate-950">{services.total}</strong> resultados disponibles
@@ -143,7 +226,25 @@ export default function ServicesBrowse({ services, filters, categories }: Props)
                         </Link>
                     )}
                 </div>
-                {services.data.length === 0 ? (
+                {view === 'map' ? (
+                    <div className="mt-6">
+                        {mapServices.length ? (
+                            <ServiceMap
+                                services={mapServices}
+                                userLocation={
+                                    data.latitude && data.longitude ? { latitude: Number(data.latitude), longitude: Number(data.longitude) } : null
+                                }
+                                radiusKm={data.latitude && data.longitude ? Number(data.radius) : undefined}
+                            />
+                        ) : (
+                            <div className="prolink-panel p-12 text-center">
+                                <Map className="mx-auto size-10 text-blue-300" />
+                                <h2 className="mt-4 text-xl font-bold">No hay servicios con ubicación válida</h2>
+                                <p className="mt-2 text-slate-600">Probá cambiando los filtros o la distancia de búsqueda.</p>
+                            </div>
+                        )}
+                    </div>
+                ) : services.data.length === 0 ? (
                     <div className="prolink-panel mt-6 p-12 text-center">
                         <Search className="mx-auto size-10 text-blue-300" />
                         <h2 className="mt-4 text-xl font-bold">No encontramos servicios</h2>
