@@ -44,6 +44,8 @@ class RolesAndProfilesTest extends TestCase
             'profession' => 'Electricista',
             'experience_years' => 4,
             'skills' => 'Instalaciones, mantenimiento',
+            'latitude' => -34.6037,
+            'longitude' => -58.3816,
         ]);
 
         $response->assertSessionHasNoErrors()->assertRedirect('/my-profile');
@@ -52,6 +54,8 @@ class RolesAndProfilesTest extends TestCase
             'full_name' => 'Thiago A. Alonso',
             'profession' => 'Electricista',
             'experience_years' => 4,
+            'latitude' => -34.6037,
+            'longitude' => -58.3816,
         ]);
     }
 

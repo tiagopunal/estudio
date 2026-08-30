@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import { LocationPicker } from '@/components/maps/location-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +19,8 @@ export default function ProfilesEdit({ profile }: Props) {
         description: profile.profile?.description ?? '',
         phone: profile.profile?.phone ?? '',
         location: profile.profile?.location ?? '',
+        latitude: profile.profile?.latitude ?? '',
+        longitude: profile.profile?.longitude ?? '',
         avatar: null as File | null,
         profession: profile.profile?.profession ?? '',
         experience_years: profile.profile?.experience_years ?? 0,
@@ -225,9 +228,7 @@ export default function ProfilesEdit({ profile }: Props) {
                                 <MapPin className="text-primary" />
                                 Ubicación
                             </h2>
-                            <p className="mt-2 text-sm text-slate-500">
-                                Por ahora guardamos ciudad o zona. El mapa se integrará en una etapa posterior.
-                            </p>
+                            <p className="mt-2 text-sm text-slate-600">Marcá tu zona de trabajo para que los clientes cercanos puedan encontrarte.</p>
                             <div className="mt-5">
                                 <Field label="Ciudad o zona" error={errors.location}>
                                     <Input
@@ -238,12 +239,14 @@ export default function ProfilesEdit({ profile }: Props) {
                                     />
                                 </Field>
                             </div>
-                            <div className="mt-5 flex h-44 items-center justify-center rounded-xl border border-dashed border-blue-200 bg-blue-50/60 text-center text-sm text-slate-500">
-                                <div>
-                                    <MapPin className="text-primary mx-auto mb-2" />
-                                    Mapa disponible próximamente
-                                </div>
+                            <div className="mt-5">
+                                <LocationPicker
+                                    latitude={data.latitude}
+                                    longitude={data.longitude}
+                                    onChange={(latitude, longitude) => setData((current) => ({ ...current, latitude, longitude }))}
+                                />
                             </div>
+                            <InputError message={errors.latitude || errors.longitude} className="mt-3" />
                         </section>
                         <button type="submit" disabled={processing} className="prolink-primary w-full">
                             <Save />

@@ -49,6 +49,8 @@ export interface MarketplaceProfile {
     description?: string | null;
     phone?: string | null;
     location?: string | null;
+    latitude?: string | null;
+    longitude?: string | null;
     avatar?: string | null;
     profession?: string | null;
     experience_years: number;

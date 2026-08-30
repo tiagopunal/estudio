@@ -12,6 +12,8 @@ class Profile extends Model
         'description',
         'phone',
         'location',
+        'latitude',
+        'longitude',
         'avatar',
         'profession',
         'experience_years',
@@ -22,6 +24,8 @@ class Profile extends Model
     {
         return [
             'experience_years' => 'integer',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 
