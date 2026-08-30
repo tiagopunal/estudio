@@ -151,6 +151,9 @@ class ServiceController extends Controller
             'min_price' => ['nullable', 'numeric', 'min:0'],
             'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
             'sort' => ['nullable', 'in:price_asc,price_desc'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude,radius'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude,radius'],
+            'radius' => ['nullable', 'numeric', 'min:1', 'max:500', 'required_with:latitude,longitude'],
         ]);
 
         // El catálogo público también muestra los servicios del usuario actual.
@@ -187,7 +190,27 @@ class ServiceController extends Controller
             $query->where('price', '<=', $filters['max_price']);
         }
 
-        if (($filters['sort'] ?? null) === 'price_asc') {
+        if (isset($filters['latitude'], $filters['longitude'], $filters['radius'])) {
+            $latitude = (float) $filters['latitude'];
+            $longitude = (float) $filters['longitude'];
+            $radius = (float) $filters['radius'];
+            $latitudeKm = 111.32;
+            $longitudeKm = 111.32 * cos(deg2rad($latitude));
+            $latitudeDelta = $radius / $latitudeKm;
+            $longitudeDelta = $radius / max($longitudeKm, 0.01);
+            $distanceSquaredSql = '(((latitude - ?) * (latitude - ?) * ?) + ((longitude - ?) * (longitude - ?) * ?))';
+            $bindings = [$latitude, $latitude, $latitudeKm ** 2, $longitude, $longitude, $longitudeKm ** 2];
+
+            $query->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereBetween('latitude', [$latitude - $latitudeDelta, $latitude + $latitudeDelta])
+                ->whereBetween('longitude', [$longitude - $longitudeDelta, $longitude + $longitudeDelta])
+                ->orderByRaw($distanceSquaredSql, $bindings);
+        }
+
+        if (isset($filters['latitude'], $filters['longitude'], $filters['radius'])) {
+            // La distancia ya se ordena con la misma aproximación usada para el radio.
+        } elseif (($filters['sort'] ?? null) === 'price_asc') {
             $query->orderBy('price');
         } elseif (($filters['sort'] ?? null) === 'price_desc') {
             $query->orderByDesc('price');
@@ -196,6 +219,21 @@ class ServiceController extends Controller
         }
 
         $services = $query->paginate(12)->withQueryString();
+
+        if (isset($filters['latitude'], $filters['longitude'], $filters['radius'])) {
+            $originLatitude = (float) $filters['latitude'];
+            $originLongitude = (float) $filters['longitude'];
+            $services->through(function (Service $service) use ($originLatitude, $originLongitude) {
+                $latitudeDelta = deg2rad((float) $service->latitude - $originLatitude);
+                $longitudeDelta = deg2rad((float) $service->longitude - $originLongitude);
+                $a = sin($latitudeDelta / 2) ** 2
+                    + cos(deg2rad($originLatitude)) * cos(deg2rad((float) $service->latitude)) * sin($longitudeDelta / 2) ** 2;
+
+                $service->setAttribute('distance_km', round(6371 * 2 * atan2(sqrt($a), sqrt(1 - $a)), 1));
+
+                return $service;
+            });
+        }
         $categories = Service::query()
             ->where('status', 'active')
             ->whereNotNull('category')

@@ -12,9 +12,12 @@ class Service extends Model
         'description',
         'price',
         'category',
+        'location',
         'latitude',
         'longitude',
         'average_rating',
+        'total_reviews',
+        'status',
     ];
 
     protected function casts(): array
