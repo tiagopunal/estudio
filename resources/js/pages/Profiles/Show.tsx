@@ -1,3 +1,4 @@
+import { ServiceMap, type MapService } from '@/components/maps/service-map';
 import { ProLinkFooter } from '@/components/prolink-footer';
 import { ProLinkHeader } from '@/components/prolink-header';
 import { type MarketplaceProfile, type Review, type Service, type User } from '@/types';
@@ -10,6 +11,19 @@ interface Props {
 export default function ProfilesShow({ profile, receivedReviews }: Props) {
     const d = profile.profile;
     const avg = receivedReviews.length ? receivedReviews.reduce((n, r) => n + r.rating, 0) / receivedReviews.length : 0;
+    const locatedServices: MapService[] = profile.services
+        .filter((service) => service.latitude != null && service.longitude != null)
+        .map((service) => ({
+            id: service.id,
+            title: service.title,
+            category: service.category,
+            price: service.price,
+            location: service.location,
+            latitude: service.latitude!,
+            longitude: service.longitude!,
+            user: { name: d?.full_name || profile.name },
+        }));
+    const professionalLocation = d?.latitude && d?.longitude ? { latitude: Number(d.latitude), longitude: Number(d.longitude) } : null;
     return (
         <div className="flex min-h-screen flex-col bg-[#f8f7fc]">
             <Head title={`Perfil de ${profile.name}`} />
@@ -73,6 +87,16 @@ export default function ProfilesShow({ profile, receivedReviews }: Props) {
                         </div>
                     </aside>
                 </div>
+                {(professionalLocation || locatedServices.length > 0) && (
+                    <section className="mt-6">
+                        <div className="mb-4">
+                            <p className="prolink-kicker">Cobertura</p>
+                            <h2 className="mt-2 text-2xl font-bold text-slate-950">Ubicación y servicios publicados</h2>
+                            <p className="mt-1 text-slate-600">La ubicación es aproximada y ayuda a encontrar profesionales cercanos.</p>
+                        </div>
+                        <ServiceMap className="h-[460px]" services={locatedServices} userLocation={professionalLocation} />
+                    </section>
+                )}
             </main>
             <ProLinkFooter />
         </div>

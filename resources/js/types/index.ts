@@ -78,8 +78,9 @@ export interface Service {
     description: string;
     price: number;
     category: string;
-    latitude: number;
-    longitude: number;
+    location?: string | null;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
     average_rating: number;
     created_at: string;
     updated_at: string;
