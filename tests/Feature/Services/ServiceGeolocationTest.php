@@ -55,4 +55,24 @@ class ServiceGeolocationTest extends TestCase
         $this->get('/services/browse?latitude=-34.6037&radius=20')
             ->assertSessionHasErrors(['longitude']);
     }
+
+    public function test_distance_filter_uses_a_circular_radius(): void
+    {
+        $professional = User::factory()->professional()->create();
+
+        Service::create([
+            'user_id' => $professional->id,
+            'title' => 'Servicio en esquina del radio',
+            'description' => 'Servicio ubicado dentro del rectángulo, pero fuera del círculo.',
+            'price' => 20000,
+            'category' => 'Hogar',
+            'latitude' => -34.20,
+            'longitude' => -57.84,
+            'status' => 'active',
+        ]);
+
+        $this->get('/services/browse?latitude=-34.6037&longitude=-58.3816&radius=50')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->has('services.data', 0));
+    }
 }

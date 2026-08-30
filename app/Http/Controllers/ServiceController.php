@@ -198,14 +198,22 @@ class ServiceController extends Controller
             $longitudeKm = 111.32 * cos(deg2rad($latitude));
             $latitudeDelta = $radius / $latitudeKm;
             $longitudeDelta = $radius / max($longitudeKm, 0.01);
-            $distanceSquaredSql = '(((latitude - ?) * (latitude - ?) * ?) + ((longitude - ?) * (longitude - ?) * ?))';
-            $bindings = [$latitude, $latitude, $latitudeKm ** 2, $longitude, $longitude, $longitudeKm ** 2];
+            $distanceSquaredSql = sprintf(
+                '(((latitude - %.8F) * (latitude - %.8F) * %.8F) + ((longitude - %.8F) * (longitude - %.8F) * %.8F))',
+                $latitude,
+                $latitude,
+                $latitudeKm ** 2,
+                $longitude,
+                $longitude,
+                $longitudeKm ** 2,
+            );
 
             $query->whereNotNull('latitude')
                 ->whereNotNull('longitude')
                 ->whereBetween('latitude', [$latitude - $latitudeDelta, $latitude + $latitudeDelta])
                 ->whereBetween('longitude', [$longitude - $longitudeDelta, $longitude + $longitudeDelta])
-                ->orderByRaw($distanceSquaredSql, $bindings);
+                ->whereRaw($distanceSquaredSql.' <= '.sprintf('%.8F', $radius ** 2))
+                ->orderByRaw($distanceSquaredSql);
         }
 
         if (isset($filters['latitude'], $filters['longitude'], $filters['radius'])) {
