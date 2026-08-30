@@ -5,8 +5,9 @@ import { ProLinkHeader } from '@/components/prolink-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { explainGeolocationError, type GeolocationFailure } from '@/lib/geolocation';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowRight, BriefcaseBusiness, List, LocateFixed, Map, Search, SlidersHorizontal, Star, UserRound } from 'lucide-react';
+import { AlertCircle, ArrowRight, BriefcaseBusiness, List, LocateFixed, Map, Search, SlidersHorizontal, Star, UserRound, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Service {
@@ -47,6 +48,8 @@ interface Props {
 export default function ServicesBrowse({ services, mapServices, filters, categories }: Props) {
     const [view, setView] = useState<'list' | 'map'>(filters.latitude ? 'map' : 'list');
     const [locationStatus, setLocationStatus] = useState('');
+    const [locationError, setLocationError] = useState<GeolocationFailure | null>(null);
+    const [locating, setLocating] = useState(false);
     const { data, setData, get, processing, errors } = useForm({
         search: filters.search || '',
         category: filters.category || '',
@@ -67,6 +70,8 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
             setLocationStatus('Tu dispositivo no admite geolocalización.');
             return;
         }
+        setLocating(true);
+        setLocationError(null);
         setLocationStatus('Buscando tu ubicación…');
         navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
@@ -75,11 +80,22 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                 setData((current) => ({ ...current, latitude, longitude }));
                 setView('map');
                 setLocationStatus('Ubicación encontrada.');
+                setLocating(false);
                 router.get(endpoint, { ...data, latitude, longitude, radius: data.radius || '50' }, { preserveScroll: true, preserveState: true });
             },
-            () => setLocationStatus('No pudimos acceder a tu ubicación. Revisá el permiso del navegador.'),
+            (error) => {
+                setLocationStatus('');
+                setLocationError(explainGeolocationError(error));
+                setLocating(false);
+            },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
         );
+    };
+    const clearLocation = () => {
+        setData((current) => ({ ...current, latitude: '', longitude: '' }));
+        setLocationStatus('');
+        setLocationError(null);
+        router.get(endpoint, { ...data, latitude: '', longitude: '', radius: '' }, { preserveScroll: true, preserveState: true });
     };
     return (
         <div className="flex min-h-screen flex-col bg-[#f8f7fc]">
@@ -180,9 +196,14 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                 </form>
                 <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-blue-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-wrap items-center gap-3">
-                        <Button type="button" onClick={locate} variant="outline" className="border-blue-300 text-blue-800">
-                            <LocateFixed className="size-4" /> Usar mi ubicación
+                        <Button type="button" onClick={locate} disabled={locating} variant="outline" className="border-blue-300 text-blue-800">
+                            <LocateFixed className={`size-4 ${locating ? 'animate-pulse' : ''}`} /> {locating ? 'Buscando...' : 'Usar mi ubicación'}
                         </Button>
+                        {data.latitude && data.longitude && (
+                            <Button type="button" onClick={clearLocation} variant="ghost" className="text-slate-700">
+                                <X className="size-4" /> Quitar ubicación
+                            </Button>
+                        )}
                         <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                             Radio
                             <select
@@ -216,6 +237,15 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                         </button>
                     </div>
                 </div>
+                {locationError && (
+                    <div role="alert" className="mt-3 flex gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
+                        <AlertCircle className="mt-0.5 size-5 shrink-0" />
+                        <div>
+                            <p className="font-bold">{locationError.title}</p>
+                            <p className="mt-1 text-sm">{locationError.message}</p>
+                        </div>
+                    </div>
+                )}
                 <div className="mt-8 flex items-center justify-between">
                     <p className="text-slate-600">
                         <strong className="text-slate-950">{services.total}</strong> resultados disponibles

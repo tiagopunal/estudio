@@ -1,3 +1,4 @@
+import { explainGeolocationError } from '@/lib/geolocation';
 import L from 'leaflet';
 import { LocateFixed, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ const argentinaCenter: [number, number] = [-38.4161, -63.6167];
 
 export function LocationPicker({ latitude, longitude, onChange }: LocationPickerProps) {
     const [status, setStatus] = useState('Hacé clic en el mapa para marcar la ubicación exacta.');
+    const [locating, setLocating] = useState(false);
     const hasPosition = Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude)) && latitude !== '' && longitude !== '';
     const position: [number, number] | null = hasPosition ? [Number(latitude), Number(longitude)] : null;
 
@@ -21,13 +23,18 @@ export function LocationPicker({ latitude, longitude, onChange }: LocationPicker
             setStatus('Tu dispositivo no admite geolocalización.');
             return;
         }
+        setLocating(true);
         setStatus('Buscando tu ubicación…');
         navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
                 onChange(coords.latitude.toFixed(7), coords.longitude.toFixed(7));
                 setStatus('Ubicación detectada. Podés ajustarla haciendo clic en el mapa.');
+                setLocating(false);
             },
-            () => setStatus('No pudimos acceder a tu ubicación. Podés elegirla manualmente en el mapa.'),
+            (error) => {
+                setStatus(explainGeolocationError(error).message);
+                setLocating(false);
+            },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
         );
     };
@@ -41,8 +48,13 @@ export function LocationPicker({ latitude, longitude, onChange }: LocationPicker
                     </p>
                     <p className="mt-1 text-sm text-slate-600">{status}</p>
                 </div>
-                <button type="button" onClick={locate} className="prolink-secondary shrink-0">
-                    <LocateFixed className="size-4" /> Usar mi ubicación
+                <button
+                    type="button"
+                    onClick={locate}
+                    disabled={locating}
+                    className="prolink-secondary shrink-0 disabled:cursor-wait disabled:opacity-60"
+                >
+                    <LocateFixed className={`size-4 ${locating ? 'animate-pulse' : ''}`} /> {locating ? 'Buscando...' : 'Usar mi ubicación'}
                 </button>
             </div>
             <MapContainer center={position || argentinaCenter} zoom={position ? 14 : 4} className="h-80 w-full" scrollWheelZoom>
