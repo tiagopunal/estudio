@@ -7,7 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { explainGeolocationError, type GeolocationFailure } from '@/lib/geolocation';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { AlertCircle, ArrowRight, BriefcaseBusiness, List, LocateFixed, Map, Search, SlidersHorizontal, Star, UserRound, X } from 'lucide-react';
+import {
+    AlertCircle,
+    ArrowRight,
+    BriefcaseBusiness,
+    List,
+    LocateFixed,
+    Map,
+    MapPin,
+    Search,
+    SlidersHorizontal,
+    Star,
+    UserRound,
+    X,
+} from 'lucide-react';
 import { useState } from 'react';
 
 interface Service {
@@ -97,6 +110,11 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
         setLocationError(null);
         router.get(endpoint, { ...data, latitude: '', longitude: '', radius: '' }, { preserveScroll: true, preserveState: true });
     };
+    const applyRadius = () => {
+        router.get(endpoint, data, { preserveScroll: true, preserveState: true });
+    };
+    const hasLocationFilter = Boolean(data.latitude && data.longitude);
+    const radiusChanged = hasLocationFilter && data.radius !== (filters.radius || '50');
     return (
         <div className="flex min-h-screen flex-col bg-[#f8f7fc]">
             <Head title="Explorar servicios" />
@@ -218,6 +236,11 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                                 ))}
                             </select>
                         </label>
+                        {radiusChanged && (
+                            <Button type="button" onClick={applyRadius} className="bg-blue-700 text-white hover:bg-blue-800">
+                                Aplicar distancia
+                            </Button>
+                        )}
                         {locationStatus && <span className="text-sm text-slate-600">{locationStatus}</span>}
                     </div>
                     <div className="flex rounded-xl bg-blue-50 p-1">
@@ -244,6 +267,12 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                             <p className="font-bold">{locationError.title}</p>
                             <p className="mt-1 text-sm">{locationError.message}</p>
                         </div>
+                    </div>
+                )}
+                {hasLocationFilter && !locationError && (
+                    <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-blue-800">
+                        <LocateFixed className="size-4" /> Mostrando servicios a menos de {filters.radius || data.radius} km de tu ubicación
+                        aproximada.
                     </div>
                 )}
                 <div className="mt-8 flex items-center justify-between">
@@ -299,9 +328,21 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                                             <p className="prolink-kicker">{service.category}</p>
                                             <h2 className="mt-2 text-xl font-bold">{service.title}</h2>
                                         </div>
-                                        <span className="text-primary text-xl font-bold">${Number(service.price).toFixed(0)}</span>
+                                        <span className="text-primary text-xl font-bold">{formatArs(service.price)}</span>
                                     </div>
                                     <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{service.description}</p>
+                                    {(service.location || service.distance_km != null) && (
+                                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+                                            {service.location && (
+                                                <span className="flex items-center gap-1.5">
+                                                    <MapPin className="size-4 text-blue-700" /> {service.location}
+                                                </span>
+                                            )}
+                                            {service.distance_km != null && (
+                                                <strong className="text-blue-800">A {service.distance_km} km de vos</strong>
+                                            )}
+                                        </div>
+                                    )}
                                     <div className="border-border mt-5 flex items-center justify-between border-t pt-4">
                                         <span className="flex items-center gap-2 text-sm">
                                             <UserRound className="size-4" />
@@ -339,4 +380,8 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
             <ProLinkFooter />
         </div>
     );
+}
+
+function formatArs(value: number | string) {
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(value));
 }
