@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import { LocationPicker } from '@/components/maps/location-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -91,9 +92,7 @@ export default function ServicesCreate() {
                             <MapPin className="text-primary" />
                             Zona del servicio
                         </h2>
-                        <p className="mt-2 text-sm text-slate-500">
-                            El mapa se incorporará más adelante. Por ahora podés indicar una zona y, opcionalmente, sus coordenadas.
-                        </p>
+                        <p className="mt-2 text-sm text-slate-600">Indicá la zona y marcá en el mapa dónde se presta el servicio.</p>
                         <div className="mt-6 grid gap-5 md:grid-cols-2">
                             <Field label="Ciudad o zona (opcional)" error={errors.location} wide>
                                 <Input
@@ -104,6 +103,13 @@ export default function ServicesCreate() {
                                     placeholder="Córdoba Capital"
                                 />
                             </Field>
+                            <div className="md:col-span-2">
+                                <LocationPicker
+                                    latitude={data.latitude}
+                                    longitude={data.longitude}
+                                    onChange={(latitude, longitude) => setData((current) => ({ ...current, latitude, longitude }))}
+                                />
+                            </div>
                             <Field label="Latitud (opcional)" error={errors.latitude}>
                                 <Input
                                     type="number"
