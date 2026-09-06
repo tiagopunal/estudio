@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowRight, CalendarDays, ChevronRight, Clock3, Loader, MapPin, Sparkles, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Loader, MapPin, UserRound } from 'lucide-react';
 
 interface Booking {
     id: number;
@@ -15,6 +15,7 @@ interface Booking {
         description: string;
         price: number;
         category: string;
+        location?: string | null;
         user: {
             id: number;
             name: string;
@@ -46,6 +47,13 @@ const statusLabels = {
     confirmed: 'Confirmada',
     completed: 'Completada',
     cancelled: 'Cancelada',
+};
+
+const statusSubtitles = {
+    pending: 'Tu solicitud está esperando confirmación del profesional',
+    confirmed: 'Tu reserva fue confirmada',
+    completed: 'El servicio fue completado',
+    cancelled: 'Esta reserva fue cancelada',
 };
 
 function formatBookingDate(value: string) {
@@ -80,203 +88,167 @@ export default function BookingsShow({ booking, canManageStatus, canCancelPendin
 
     const canChangeStatus = booking.status === 'pending' || booking.status === 'confirmed';
 
+    const currency = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Reserva #${booking.id}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4 md:p-6">
-                <div className="overflow-hidden rounded-[28px] border border-emerald-200/70 bg-[linear-gradient(135deg,rgba(2,6,23,0.98),rgba(6,78,59,0.92),rgba(34,211,238,0.85))] p-6 text-white shadow-[0_28px_80px_rgba(15,23,42,0.2)] dark:border-white/10">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="max-w-2xl space-y-3">
-                            <p className="text-sm tracking-[0.3em] text-emerald-100 uppercase">Reserva #{booking.id}</p>
-                            <h1 className="text-3xl font-semibold sm:text-4xl">
-                                Seguí el estado de esta reserva con el mismo tono visual del marketplace.
-                            </h1>
-                            <p className="text-sm leading-6 text-slate-100/90">
-                                Revisá el servicio, la fecha y las acciones disponibles desde una pantalla alineada con el resto del producto.
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap gap-3">
-                            <Button asChild className="rounded-full bg-emerald-300 text-slate-950 hover:bg-emerald-200">
-                                <Link href={route('bookings.index')}>
-                                    Volver a mis reservas
-                                    <ArrowRight className="h-4 w-4" />
-                                </Link>
-                            </Button>
-                            <Button asChild variant="outline" className="rounded-full border-white/70 text-white hover:bg-white/10">
-                                <Link href={route('marketplace')}>Volver al marketplace</Link>
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="space-y-4">
-                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                            <div className="flex flex-wrap items-start justify-between gap-4">
-                                <div className="space-y-2">
-                                    <p className="text-sm tracking-[0.2em] text-emerald-600 uppercase">Servicio</p>
-                                    <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">{booking.service.title}</h2>
-                                    <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{booking.service.description}</p>
-                                </div>
-                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusColors[booking.status]}`}>
+            <main className="min-h-full bg-[#f8f7fc]">
+                <div className="prolink-page">
+                    <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p className="prolink-kicker">Detalle de reserva</p>
+                            <div className="mt-2 flex flex-wrap items-center gap-3">
+                                <h1 className="prolink-title">Reserva #{booking.id}</h1>
+                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${statusColors[booking.status]}`}>
                                     {statusLabels[booking.status]}
                                 </span>
                             </div>
-
-                            <div className="mt-5 grid gap-3 text-sm text-slate-600 sm:grid-cols-2 dark:text-slate-300">
-                                <p className="inline-flex items-center gap-2">
-                                    <Sparkles className="h-4 w-4 text-amber-500" />
-                                    {booking.service.category}
-                                </p>
-                                <p className="inline-flex items-center gap-2">
-                                    <Clock3 className="h-4 w-4" />${booking.service.price.toFixed(2)}
-                                </p>
-                                <p className="inline-flex items-center gap-2">
-                                    <UserRound className="h-4 w-4" />
-                                    {booking.service.user.name}
-                                </p>
-                                <p className="inline-flex items-center gap-2">
-                                    <MapPin className="h-4 w-4" />
-                                    Servicio #{booking.service.id}
-                                </p>
-                            </div>
+                            <p className="prolink-subtitle">{statusSubtitles[booking.status]}</p>
                         </div>
-
-                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-cyan-500" />
-                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Detalle de la reserva</h2>
-                            </div>
-                            <div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
-                                <p className="inline-flex items-center gap-2">
-                                    <CalendarDays className="h-4 w-4" />
-                                    {formatBookingDate(booking.date)}
-                                </p>
-                                <p className="inline-flex items-center gap-2">
-                                    <Clock3 className="h-4 w-4" />
-                                    Creada: {formatBookingDate(booking.created_at)}
-                                </p>
-                                <p className="inline-flex items-center gap-2">
-                                    <UserRound className="h-4 w-4" />
-                                    Cliente: {booking.user.name}
-                                </p>
-                                <p className="inline-flex items-center gap-2">
-                                    <MapPin className="h-4 w-4" />
-                                    Email del cliente: {booking.user.email}
-                                </p>
-                            </div>
-                        </div>
+                        <Link href={route('bookings.index')} className="prolink-secondary self-start sm:self-auto">
+                            <ArrowLeft className="size-4" />
+                            Volver a mis reservas
+                        </Link>
                     </div>
 
-                    <div className="space-y-4">
-                        {canChangeStatus ? (
-                            <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                                <p className="text-sm tracking-[0.2em] text-emerald-600 uppercase">Acciones rápidas</p>
-                                <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">Cambiar estado</h2>
-                                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                    Actualizá el flujo de esta reserva desde una tarjeta consistente con el resto de la experiencia.
-                                </p>
-
-                                <div className="mt-4 space-y-3">
-                                    {booking.status === 'pending' && (
-                                        <>
-                                            {canManageStatus && (
-                                                <Button
-                                                    onClick={() => handleStatusChange('confirmed')}
-                                                    disabled={processing}
-                                                    className="w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
-                                                >
-                                                    {processing ? (
-                                                        <>
-                                                            <Loader className="mr-2 h-4 w-4 animate-spin" />
-                                                            Confirmando...
-                                                        </>
-                                                    ) : (
-                                                        'Confirmar reserva'
-                                                    )}
-                                                </Button>
-                                            )}
-                                            {canCancelPending && (
-                                                <Button
-                                                    onClick={() => handleStatusChange('cancelled')}
-                                                    disabled={processing}
-                                                    variant="outline"
-                                                    className="w-full rounded-full border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-200 dark:hover:bg-rose-950/40"
-                                                >
-                                                    {processing ? 'Procesando...' : canManageStatus ? 'Rechazar reserva' : 'Cancelar reserva'}
-                                                </Button>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {booking.status === 'confirmed' && (
-                                        <>
-                                            {canManageStatus && (
-                                                <Button
-                                                    onClick={() => handleStatusChange('completed')}
-                                                    disabled={processing}
-                                                    className="w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
-                                                >
-                                                    {processing ? 'Completando...' : 'Completar reserva'}
-                                                </Button>
-                                            )}
-                                            {canCustomerCancelConfirmed && (
-                                                <Button
-                                                    onClick={() => handleStatusChange('cancelled')}
-                                                    disabled={processing}
-                                                    variant="outline"
-                                                    className="w-full rounded-full border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-200 dark:hover:bg-rose-950/40"
-                                                >
-                                                    {processing ? 'Cancelando...' : 'Cancelar reserva'}
-                                                </Button>
-                                            )}
-                                        </>
+                    <div className="grid gap-8 lg:grid-cols-[1.35fr_.65fr]">
+                        <div className="space-y-6">
+                            <section className="prolink-panel p-6 sm:p-8">
+                                <div className="flex flex-wrap items-start justify-between gap-5">
+                                    <div>
+                                        <p className="prolink-kicker">{booking.service.category}</p>
+                                        <h2 className="mt-2 text-3xl font-bold text-slate-950">{booking.service.title}</h2>
+                                    </div>
+                                    <p className="text-2xl font-bold text-blue-700">{currency.format(Number(booking.service.price))}</p>
+                                </div>
+                                <p className="mt-5 leading-7 whitespace-pre-line text-slate-700">{booking.service.description}</p>
+                                <div className="mt-6 grid gap-4 border-t border-slate-200 pt-5 text-sm text-slate-700 sm:grid-cols-2">
+                                    <p className="flex items-center gap-2 font-bold">
+                                        <UserRound className="size-5 text-blue-700" />
+                                        {booking.service.user.name}
+                                    </p>
+                                    {booking.service.location && (
+                                        <p className="flex items-center gap-2">
+                                            <MapPin className="size-5 text-blue-700" />
+                                            {booking.service.location}
+                                        </p>
                                     )}
                                 </div>
+                            </section>
+
+                            <section className="prolink-panel p-6 sm:p-8">
+                                <p className="prolink-kicker">Agenda</p>
+                                <h2 className="mt-2 text-2xl font-bold text-slate-950">Fecha y hora de la reserva</h2>
+                                <div className="mt-5 flex items-start gap-3 rounded-xl bg-blue-50 p-4 text-blue-900">
+                                    <CalendarDays className="mt-0.5 size-6 shrink-0 text-blue-700" />
+                                    <div>
+                                        <p className="font-bold">{formatBookingDate(booking.date)}</p>
+                                        <p className="mt-1 text-sm text-blue-800">Creada el {formatBookingDate(booking.created_at)}</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {canManageStatus && (
+                                <section className="prolink-panel p-6 sm:p-8">
+                                    <p className="prolink-kicker">Contacto</p>
+                                    <h2 className="mt-2 text-2xl font-bold text-slate-950">Información del cliente</h2>
+                                    <div className="mt-5 space-y-3 text-sm text-slate-700">
+                                        <p className="flex items-center gap-2 font-bold">
+                                            <UserRound className="size-5 text-blue-700" />
+                                            {booking.user.name}
+                                        </p>
+                                        <p className="flex items-center gap-2">
+                                            <MapPin className="size-5 text-blue-700" />
+                                            {booking.user.email}
+                                        </p>
+                                    </div>
+                                </section>
+                            )}
+                        </div>
+
+                        <aside className="lg:sticky lg:top-24 lg:self-start">
+                            <div className="prolink-panel p-6">
+                                <p className="text-sm font-bold text-slate-500 uppercase">Acciones de la reserva</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">Gestioná el siguiente paso según el estado actual.</p>
+
+                                {canChangeStatus && (
+                                    <div className="mt-6 space-y-3">
+                                        {booking.status === 'pending' && canManageStatus && (
+                                            <Button
+                                                onClick={() => handleStatusChange('confirmed')}
+                                                disabled={processing}
+                                                className="prolink-primary w-full"
+                                            >
+                                                {processing ? (
+                                                    <>
+                                                        <Loader className="size-4 animate-spin" />
+                                                        Confirmando...
+                                                    </>
+                                                ) : (
+                                                    'Confirmar reserva'
+                                                )}
+                                            </Button>
+                                        )}
+                                        {booking.status === 'pending' && canCancelPending && (
+                                            <Button
+                                                onClick={() => handleStatusChange('cancelled')}
+                                                disabled={processing}
+                                                variant="outline"
+                                                className="prolink-secondary w-full"
+                                            >
+                                                {processing ? 'Procesando...' : canManageStatus ? 'Rechazar reserva' : 'Cancelar reserva'}
+                                            </Button>
+                                        )}
+                                        {booking.status === 'confirmed' && canManageStatus && (
+                                            <Button
+                                                onClick={() => handleStatusChange('completed')}
+                                                disabled={processing}
+                                                className="prolink-primary w-full"
+                                            >
+                                                {processing ? 'Completando...' : 'Completar reserva'}
+                                            </Button>
+                                        )}
+                                        {booking.status === 'confirmed' && canCustomerCancelConfirmed && (
+                                            <Button
+                                                onClick={() => handleStatusChange('cancelled')}
+                                                disabled={processing}
+                                                variant="outline"
+                                                className="prolink-secondary w-full"
+                                            >
+                                                {processing ? 'Cancelando...' : 'Cancelar reserva'}
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
 
                                 {errors.status && (
-                                    <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-950/60 dark:text-rose-100">
+                                    <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                                         {errors.status}
                                     </div>
                                 )}
-                            </div>
-                        ) : (
-                            <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                                <p className="text-sm tracking-[0.2em] text-emerald-600 uppercase">Estado final</p>
-                                <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">Esta reserva ya no admite cambios</h2>
-                                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                    El flujo se mantiene visualmente consistente, pero la acción está bloqueada cuando la reserva está completada o
-                                    cancelada.
-                                </p>
-                            </div>
-                        )}
 
-                        <div className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <p className="text-sm tracking-[0.2em] text-emerald-600 uppercase">Siguiente paso</p>
-                                    <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">¿Querés seguir reservando?</h2>
-                                </div>
-                                <ChevronRight className="h-5 w-5 text-slate-400" />
-                            </div>
-                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                Volvé al marketplace para explorar más servicios o crea una nueva reserva desde acá.
-                            </p>
-                            <div className="mt-4 flex flex-wrap gap-3">
-                                <Button asChild className="rounded-full bg-emerald-300 text-slate-950 hover:bg-emerald-200">
-                                    <Link href={route('bookings.create')}>Nueva reserva</Link>
-                                </Button>
-                                {booking.status === 'completed' && (
-                                    <Button asChild variant="outline" className="rounded-full border-slate-200 dark:border-white/10">
-                                        <Link href={`/bookings/${booking.id}/reviews/create`}>Dejar reseña</Link>
-                                    </Button>
+                                {!canChangeStatus && booking.status !== 'completed' && (
+                                    <p className="mt-6 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                                        Esta reserva no admite nuevas acciones.
+                                    </p>
                                 )}
+
+                                {booking.status === 'completed' && !canManageStatus && (
+                                    <Link href={`/bookings/${booking.id}/reviews/create`} className="prolink-primary mt-6 w-full">
+                                        Dejar reseña
+                                    </Link>
+                                )}
+
+                                <Link href={route('bookings.create')} className="prolink-secondary mt-3 w-full">
+                                    Nueva reserva
+                                </Link>
                             </div>
-                        </div>
+                        </aside>
                     </div>
                 </div>
-            </div>
+            </main>
         </AppLayout>
     );
 }
