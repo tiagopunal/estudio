@@ -30,7 +30,8 @@ interface Booking {
 interface Props {
     booking: Booking;
     canManageStatus: boolean;
-    canCancel: boolean;
+    canCancelPending: boolean;
+    canCustomerCancelConfirmed: boolean;
 }
 
 const statusColors = {
@@ -57,7 +58,7 @@ function formatBookingDate(value: string) {
     return parsed.toLocaleString();
 }
 
-export default function BookingsShow({ booking, canManageStatus, canCancel }: Props) {
+export default function BookingsShow({ booking, canManageStatus, canCancelPending, canCustomerCancelConfirmed }: Props) {
     const { data, setData, patch, processing, errors } = useForm({
         status: booking.status,
     });
@@ -196,14 +197,14 @@ export default function BookingsShow({ booking, canManageStatus, canCancel }: Pr
                                                     )}
                                                 </Button>
                                             )}
-                                            {canCancel && (
+                                            {canCancelPending && (
                                                 <Button
                                                     onClick={() => handleStatusChange('cancelled')}
                                                     disabled={processing}
                                                     variant="outline"
                                                     className="w-full rounded-full border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-200 dark:hover:bg-rose-950/40"
                                                 >
-                                                    {processing ? 'Cancelando...' : 'Cancelar reserva'}
+                                                    {processing ? 'Procesando...' : canManageStatus ? 'Rechazar reserva' : 'Cancelar reserva'}
                                                 </Button>
                                             )}
                                         </>
@@ -220,7 +221,7 @@ export default function BookingsShow({ booking, canManageStatus, canCancel }: Pr
                                                     {processing ? 'Completando...' : 'Completar reserva'}
                                                 </Button>
                                             )}
-                                            {canCancel && (
+                                            {canCustomerCancelConfirmed && (
                                                 <Button
                                                     onClick={() => handleStatusChange('cancelled')}
                                                     disabled={processing}
