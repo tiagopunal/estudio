@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Bookings;
 
+use App\Models\Booking;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,11 +37,14 @@ class CreateBookingTest extends TestCase
 
         $response = $this->post('/bookings', $payload);
 
-        $response->assertRedirect();
+        $response->assertRedirectToRoute('bookings.show', Booking::query()->latest('id')->first());
         $this->assertDatabaseHas('bookings', [
             'user_id' => $customer->id,
             'service_id' => $service->id,
             'status' => 'pending',
         ]);
+
+        $booking = Booking::query()->latest('id')->firstOrFail();
+        $this->get("/bookings/{$booking->id}")->assertOk();
     }
 }

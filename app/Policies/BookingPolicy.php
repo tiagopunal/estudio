@@ -20,7 +20,7 @@ class BookingPolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return $user->isClient();
     }
 
     /**
@@ -36,6 +36,6 @@ class BookingPolicy
      */
     public function delete(User $user, Booking $booking): bool
     {
-        return $user->id === $booking->user_id && $booking->status === 'pending';
+        return false;
     }
 }

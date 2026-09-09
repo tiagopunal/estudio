@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Models\Booking;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 class BookingController extends Controller
@@ -29,9 +31,12 @@ class BookingController extends Controller
 
     public function create(Request $request)
     {
+        $this->authorize('create', Booking::class);
+
         $query = Service::query()
             ->with('user')
-            ->where('user_id', '!=', auth()->id());
+            ->where('user_id', '!=', auth()->id())
+            ->where('status', 'active');
 
         if ($request->filled('service_id')) {
             $query->where('id', $request->service_id);
@@ -46,31 +51,54 @@ class BookingController extends Controller
 
     public function store(StoreBookingRequest $request)
     {
-        $service = Service::findOrFail($request->service_id);
+        $user = auth()->user();
 
-        if ($service->user_id === auth()->id()) {
+        if (! $user || ! $user->isClient()) {
+            return back()
+                ->withErrors(['service_id' => 'Solo los clientes pueden crear reservas'])
+                ->withInput();
+        }
+
+        $service = Service::find($request->service_id);
+
+        if (! $service) {
+            return back()
+                ->withErrors(['service_id' => 'El servicio seleccionado no existe'])
+                ->withInput();
+        }
+
+        if ($service->user_id === $user->id) {
             return back()
                 ->withErrors(['service_id' => 'No puedes reservar tu propio servicio'])
                 ->withInput();
         }
 
-        $exists = Booking::where('service_id', $request->service_id)
-            ->where('date', $request->date)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->exists();
+        if ($service->status !== 'active') {
+            return back()
+                ->withErrors(['service_id' => 'El servicio seleccionado no está disponible'])
+                ->withInput();
+        }
 
-        if ($exists) {
+        $booking = DB::transaction(function () use ($request, $user, $service) {
+            Service::query()->whereKey($service->id)->lockForUpdate()->firstOrFail();
+
+            if ($this->hasScheduleConflict($service->id, $request->date)) {
+                return null;
+            }
+
+            return Booking::create([
+                'user_id' => $user->id,
+                'service_id' => $service->id,
+                'date' => $request->date,
+                'status' => 'pending',
+            ]);
+        });
+
+        if (! $booking) {
             return back()
                 ->withErrors(['date' => 'Este servicio ya tiene una reserva en ese horario'])
                 ->withInput();
         }
-
-        $booking = Booking::create([
-            'user_id' => auth()->id(),
-            'service_id' => $request->service_id,
-            'date' => $request->date,
-            'status' => 'pending',
-        ]);
 
         return redirect()->route('bookings.show', $booking)
             ->with('success', 'Reserva creada correctamente');
@@ -81,48 +109,16 @@ class BookingController extends Controller
         $this->authorize('view', $booking);
 
         $booking->load(['service.user', 'user']);
+        $user = auth()->user();
 
         return Inertia::render('Bookings/Show', [
             'booking' => $booking,
-            'canManageStatus' => auth()->id() === $booking->service->user_id,
-            'canCancel' => auth()->id() === $booking->user_id || auth()->id() === $booking->service->user_id,
+            'canManageStatus' => $user->isProfessional() && $user->id === $booking->service->user_id,
+            'canCancelPending' => ($user->isClient() && $user->id === $booking->user_id)
+                || ($user->isProfessional() && $user->id === $booking->service->user_id),
+            'canCustomerCancelConfirmed' => $user->isClient() && $user->id === $booking->user_id
+                && $this->canCustomerCancelConfirmedBooking($booking),
         ]);
-    }
-
-    public function edit(Booking $booking)
-    {
-        $this->authorize('update', $booking);
-
-        return redirect()->route('bookings.show', $booking);
-    }
-
-    public function update(Request $request, Booking $booking)
-    {
-        $this->authorize('update', $booking);
-
-        $validated = $request->validate([
-            'service_id' => ['sometimes', 'required', 'exists:services,id'],
-            'date' => ['sometimes', 'required', 'date_format:Y-m-d H:i', 'after:now'],
-        ]);
-
-        $booking->update($validated);
-
-        return redirect()->route('bookings.show', $booking)
-            ->with('success', 'Reserva actualizada correctamente');
-    }
-
-    public function destroy(Booking $booking)
-    {
-        $this->authorize('delete', $booking);
-
-        if ($booking->status !== 'pending') {
-            return back()->withErrors(['status' => 'Solo puedes eliminar reservas pendientes']);
-        }
-
-        $booking->delete();
-
-        return redirect()->route('bookings.index')
-            ->with('success', 'Reserva eliminada correctamente');
     }
 
     public function updateStatus(UpdateBookingStatusRequest $request, Booking $booking)
@@ -132,25 +128,6 @@ class BookingController extends Controller
         $user = auth()->user();
         $currentStatus = $booking->status;
         $newStatus = $request->status;
-
-        if ($currentStatus === 'completed') {
-            return back()->withErrors(['status' => 'Una reserva completada no puede modificarse']);
-        }
-
-        if ($currentStatus === 'cancelled') {
-            return back()->withErrors(['status' => 'Una reserva cancelada no puede modificarse']);
-        }
-
-        $isProvider = $user->id === $booking->service->user_id;
-        $isCustomer = $user->id === $booking->user_id;
-
-        if (in_array($newStatus, ['confirmed', 'completed'], true) && ! $isProvider) {
-            return back()->withErrors(['status' => 'Solo el profesional puede confirmar o completar reservas']);
-        }
-
-        if ($newStatus === 'cancelled' && ! $isCustomer && ! $isProvider) {
-            return back()->withErrors(['status' => 'No tienes permisos para cancelar esta reserva']);
-        }
 
         $validTransitions = [
             'pending' => ['confirmed', 'cancelled'],
@@ -163,6 +140,31 @@ class BookingController extends Controller
             return back()->withErrors(['status' => 'Transición de estado no válida']);
         }
 
+        $isProvider = $user->isProfessional() && $user->id === $booking->service->user_id;
+        $isCustomer = $user->isClient() && $user->id === $booking->user_id;
+
+        if ($currentStatus === 'pending' && $newStatus === 'confirmed' && ! $isProvider) {
+            return back()->withErrors(['status' => 'Solo el profesional dueño del servicio puede confirmar reservas']);
+        }
+
+        if ($currentStatus === 'pending' && $newStatus === 'cancelled' && ! $isCustomer && ! $isProvider) {
+            return back()->withErrors(['status' => 'No tienes permisos para rechazar esta reserva']);
+        }
+
+        if ($currentStatus === 'confirmed' && $newStatus === 'completed' && ! $isProvider) {
+            return back()->withErrors(['status' => 'Solo el profesional dueño del servicio puede completar reservas']);
+        }
+
+        if ($currentStatus === 'confirmed' && $newStatus === 'cancelled') {
+            if (! $isCustomer) {
+                return back()->withErrors(['status' => 'Solo el cliente puede cancelar una reserva confirmada']);
+            }
+
+            if (! $this->canCustomerCancelConfirmedBooking($booking)) {
+                return back()->withErrors(['status' => 'No puedes cancelar una reserva confirmada con menos de 24 horas de anticipación']);
+            }
+        }
+
         $booking->update(['status' => $newStatus]);
 
         if ($newStatus === 'cancelled') {
@@ -172,5 +174,20 @@ class BookingController extends Controller
 
         return redirect()->route('bookings.show', $booking)
             ->with('success', 'Estado actualizado correctamente');
+    }
+
+    private function hasScheduleConflict(int $serviceId, string $date, ?int $ignoredBookingId = null): bool
+    {
+        return Booking::query()
+            ->where('service_id', $serviceId)
+            ->where('date', $date)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->when($ignoredBookingId, fn ($query) => $query->where('id', '!=', $ignoredBookingId))
+            ->exists();
+    }
+
+    private function canCustomerCancelConfirmedBooking(Booking $booking): bool
+    {
+        return Carbon::now()->addHours(24)->lte(Carbon::parse($booking->date));
     }
 }

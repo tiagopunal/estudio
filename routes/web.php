@@ -34,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::patch('bookings/{booking}/status', [BookingController::class, 'updateStatus'])
         ->name('bookings.updateStatus');
-    Route::resource('bookings', BookingController::class);
+    Route::resource('bookings', BookingController::class)->except(['edit', 'update', 'destroy']);
     Route::resource('services', ServiceController::class)->except(['show']);
     Route::get('bookings/{booking}/reviews/create', [ReviewController::class, 'create'])
         ->whereNumber('booking')

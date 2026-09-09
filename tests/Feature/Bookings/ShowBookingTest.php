@@ -40,5 +40,9 @@ class ShowBookingTest extends TestCase
         $response = $this->get("/bookings/{$booking->id}");
 
         $response->assertStatus(200);
+
+        $this->actingAs($professional)
+            ->get("/bookings/{$booking->id}")
+            ->assertOk();
     }
 }
