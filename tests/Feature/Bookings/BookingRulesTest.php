@@ -77,6 +77,12 @@ class BookingRulesTest extends TestCase
             'comment' => 'Trabajo terminado correctamente.',
         ])->assertRedirect(route('services.show', $service));
 
+        $this->get(route('services.show', $service))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('service.reviews.0.booking_id', $booking->id)
+                ->where('service.reviews.0.rating', 5)
+                ->where('service.reviews.0.comment', 'Trabajo terminado correctamente.'));
+
         $this->get(route('bookings.show', $booking))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('booking.status', 'completed')

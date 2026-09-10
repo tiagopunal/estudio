@@ -2,8 +2,9 @@ import { ServiceMap } from '@/components/maps/service-map';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, CalendarDays, Loader, MapPin, UserRound } from 'lucide-react';
+import { useState } from 'react';
 
 interface Booking {
     id: number;
@@ -73,9 +74,8 @@ function formatBookingDate(value: string) {
 }
 
 export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canReview, canCancelPending, canCustomerCancelConfirmed }: Props) {
-    const { data, setData, patch, processing, errors } = useForm({
-        status: booking.status,
-    });
+    const [processing, setProcessing] = useState(false);
+    const errors = usePage().props.errors as { status?: string };
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
@@ -84,11 +84,16 @@ export default function BookingsShow({ booking, canManageStatus, isReceivedBooki
     ];
 
     const handleStatusChange = (newStatus: Booking['status']) => {
-        if (newStatus !== data.status) {
-            setData('status', newStatus);
-            patch(route('bookings.updateStatus', booking.id), {
+        if (newStatus !== booking.status) {
+            setProcessing(true);
+            router.patch(
+                route('bookings.updateStatus', booking.id),
+                { status: newStatus },
+                {
                 preserveScroll: true,
-            });
+                    onFinish: () => setProcessing(false),
+                },
+            );
         }
     };
 
