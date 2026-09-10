@@ -13,6 +13,7 @@ class Service extends Model
         'price',
         'category',
         'location',
+        'image_url',
         'latitude',
         'longitude',
         'average_rating',

@@ -30,6 +30,7 @@ interface Service {
     description: string;
     price: number;
     category: string;
+    image_url?: string | null;
     average_rating: number;
     location?: string | null;
     latitude?: number | string | null;
@@ -361,11 +362,17 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                                 key={service.id}
                                 className="prolink-panel group overflow-hidden transition hover:-translate-y-1 hover:border-blue-300"
                             >
-                                <div
-                                    className={`flex h-48 items-center justify-center bg-gradient-to-br ${i % 3 === 0 ? 'from-blue-100 to-indigo-200' : i % 3 === 1 ? 'from-slate-100 to-blue-100' : 'from-indigo-100 to-violet-200'}`}
-                                >
-                                    <BriefcaseBusiness className="text-primary/35 size-14" />
-                                </div>
+                                {service.image_url ? (
+                                    <div className="h-48 overflow-hidden">
+                                        <img src={`/${service.image_url}`} alt={service.title} className="h-full w-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div
+                                        className={`flex h-48 items-center justify-center bg-gradient-to-br ${i % 3 === 0 ? 'from-blue-100 to-indigo-200' : i % 3 === 1 ? 'from-slate-100 to-blue-100' : 'from-indigo-100 to-violet-200'}`}
+                                    >
+                                        <BriefcaseBusiness className="text-primary/35 size-14" />
+                                    </div>
+                                )}
                                 <div className="p-5">
                                     <div className="flex items-start justify-between gap-3">
                                         <div>

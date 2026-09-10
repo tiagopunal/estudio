@@ -44,11 +44,19 @@ class ReviewController extends Controller
                 abort(403);
             }
 
+            if ($booking->status !== 'completed') {
+                abort(403, 'Solo se pueden reseñar reservas completadas');
+            }
+
+            if (Review::where('booking_id', $booking->id)->exists()) {
+                abort(403, 'Ya existe una reseña para esta reserva');
+            }
+
             $bookings = collect([$booking->load(['service', 'user'])]);
             $selectedServiceId = $booking->service_id;
         } else {
             $bookingsQuery = Booking::where('user_id', $user->id)
-                ->whereIn('status', ['completed', 'completada'])
+                ->where('status', 'completed')
                 ->whereNotIn('id', Review::select('booking_id'))
                 ->with('service');
 
@@ -75,7 +83,7 @@ class ReviewController extends Controller
             return back()->with('error', 'No tienes permiso para reseñar esta reserva')->withInput();
         }
 
-        if (! $this->isCompletedStatus($booking->status)) {
+        if ($booking->status !== 'completed') {
             return back()->with('error', 'Solo se pueden reseñar reservas completadas')->withInput();
         }
 
@@ -152,7 +160,7 @@ class ReviewController extends Controller
         if ($currentUser) {
             $currentBooking = Booking::where('user_id', $currentUser->id)
                 ->where('service_id', $service->id)
-                ->whereIn('status', ['completed', 'completada'])
+                ->where('status', 'completed')
                 ->whereNotIn('id', Review::select('booking_id'))
                 ->with('service')
                 ->first();
@@ -197,10 +205,5 @@ class ReviewController extends Controller
                 'average_rating' => $averageRating ?? 0,
                 'total_reviews' => $totalReviews,
             ]);
-    }
-
-    private function isCompletedStatus(?string $status): bool
-    {
-        return in_array($status, ['completed', 'completada'], true);
     }
 }

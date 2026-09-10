@@ -17,6 +17,7 @@ interface Service {
     price: number;
     category: string;
     location?: string | null;
+    image_url?: string | null;
     average_rating: number;
     latitude?: number;
     longitude?: number;
@@ -38,9 +39,15 @@ export default function ServicesShow({ service, isOwner }: Props) {
             <main className="prolink-page flex-1">
                 <div className="grid gap-8 lg:grid-cols-[1.45fr_.65fr]">
                     <div>
-                        <div className="flex min-h-80 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-100 via-indigo-100 to-blue-200">
-                            <BriefcaseBusiness className="size-24 text-blue-700/30" />
-                        </div>
+                        {service.image_url ? (
+                            <div className="flex min-h-80 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-blue-100 via-indigo-100 to-blue-200">
+                                <img src={`/${service.image_url}`} alt={service.title} className="h-full w-full object-cover" />
+                            </div>
+                        ) : (
+                            <div className="flex min-h-80 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-100 via-indigo-100 to-blue-200">
+                                <BriefcaseBusiness className="size-24 text-blue-700/30" />
+                            </div>
+                        )}
                         <p className="prolink-kicker mt-8">{service.category}</p>
                         <h1 className="prolink-title mt-2">{service.title}</h1>
                         <p className="mt-6 text-lg leading-8 whitespace-pre-line text-slate-700">{service.description}</p>

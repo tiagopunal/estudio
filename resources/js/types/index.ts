@@ -81,6 +81,7 @@ export interface Service {
     location?: string | null;
     latitude?: number | string | null;
     longitude?: number | string | null;
+    image_url?: string | null;
     average_rating: number;
     created_at: string;
     updated_at: string;

@@ -47,5 +47,9 @@ class ShowBookingTest extends TestCase
                 ->where('booking.service.location', 'Centro, Córdoba')
                 ->where('booking.service.latitude', '-33.4500000')
                 ->where('booking.service.longitude', '-70.6600000'));
+
+        $this->actingAs($professional)
+            ->get("/bookings/{$booking->id}")
+            ->assertOk();
     }
 }

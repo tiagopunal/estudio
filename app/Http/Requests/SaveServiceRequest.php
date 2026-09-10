@@ -27,6 +27,7 @@ class SaveServiceRequest extends FormRequest
             'description' => ['required', 'string', 'min:20', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0.01', 'max:99999999.99'],
             'category' => ['required', 'string', 'min:3', 'max:50', 'regex:/^[\pL\pM\s\-&]+$/u'],
+            'image_url' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
