@@ -8,6 +8,7 @@ interface LocationPickerProps {
     latitude: string;
     longitude: string;
     onChange: (latitude: string, longitude: string) => void;
+    onAddressChange?: (address: string) => void;
     title?: string;
 }
 
@@ -21,7 +22,7 @@ interface AddressResult {
     lon: string;
 }
 
-export function LocationPicker({ latitude, longitude, onChange, title = 'Punto del servicio' }: LocationPickerProps) {
+export function LocationPicker({ latitude, longitude, onChange, onAddressChange, title = 'Punto del servicio' }: LocationPickerProps) {
     const [status, setStatus] = useState('Hacé clic en el mapa para marcar la ubicación exacta.');
     const [locating, setLocating] = useState(false);
     const [address, setAddress] = useState('');
@@ -92,6 +93,7 @@ export function LocationPicker({ latitude, longitude, onChange, title = 'Punto d
     const chooseAddress = (result: AddressResult) => {
         onChange(Number(result.lat).toFixed(7), Number(result.lon).toFixed(7));
         setAddress(result.display_name);
+        onAddressChange?.(result.display_name.slice(0, 255));
         setResults([]);
         setAddressError('');
         setStatus('Dirección encontrada. Ajustá el punto en el mapa si es necesario.');
@@ -178,7 +180,7 @@ export function LocationPicker({ latitude, longitude, onChange, title = 'Punto d
             <MapContainer center={position || argentinaCenter} zoom={position ? 14 : 4} className="h-80 w-full" scrollWheelZoom>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <ChoosePosition onChange={onChange} />
                 <Recenter position={position} />

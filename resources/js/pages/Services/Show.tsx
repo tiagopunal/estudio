@@ -89,7 +89,7 @@ export default function ServicesShow({ service, isOwner }: Props) {
                                     Ver perfil profesional
                                 </Link>
                             </div>
-                            {(service.latitude || service.longitude) && (
+                            {service.latitude != null && service.longitude != null && (
                                 <p className="mt-5 flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
                                     <MapPin />
                                     Ubicación registrada

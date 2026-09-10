@@ -108,6 +108,7 @@ export default function ServicesCreate() {
                                     latitude={data.latitude}
                                     longitude={data.longitude}
                                     onChange={(latitude, longitude) => setData((current) => ({ ...current, latitude, longitude }))}
+                                    onAddressChange={(location) => setData('location', location)}
                                 />
                             </div>
                             <Field label="Latitud (opcional)" error={errors.latitude}>

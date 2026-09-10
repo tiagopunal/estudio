@@ -11,6 +11,7 @@ import {
     AlertCircle,
     ArrowRight,
     BriefcaseBusiness,
+    Columns2,
     List,
     LocateFixed,
     Map,
@@ -59,7 +60,8 @@ interface Props {
 }
 
 export default function ServicesBrowse({ services, mapServices, filters, categories }: Props) {
-    const [view, setView] = useState<'list' | 'map'>(filters.latitude ? 'map' : 'list');
+    const [view, setView] = useState<'list' | 'map' | 'split'>(mapServices.length ? 'split' : 'list');
+    const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
     const [locationStatus, setLocationStatus] = useState('');
     const [locationError, setLocationError] = useState<GeolocationFailure | null>(null);
     const [locating, setLocating] = useState(false);
@@ -258,6 +260,13 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                         >
                             <Map className="size-4" /> Mapa
                         </button>
+                        <button
+                            type="button"
+                            onClick={() => setView('split')}
+                            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold ${view === 'split' ? 'bg-blue-700 text-white' : 'text-blue-800'}`}
+                        >
+                            <Columns2 className="size-4" /> Combinada
+                        </button>
                     </div>
                 </div>
                 {locationError && (
@@ -285,22 +294,57 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
                         </Link>
                     )}
                 </div>
-                {view === 'map' ? (
+                {view === 'split' ? (
+                    <div className="mt-6">
+                        {mapServices.length ? (
+                            <div className="grid gap-4 lg:grid-cols-[minmax(300px,380px)_1fr]">
+                                <div className="max-h-[640px] space-y-3 overflow-y-auto rounded-3xl border border-blue-200 bg-white p-3 shadow-sm">
+                                    <div className="sticky top-0 z-10 rounded-2xl bg-blue-50 px-4 py-3">
+                                        <p className="font-bold text-slate-950">{mapServices.length} servicios en el mapa</p>
+                                        <p className="mt-1 text-xs text-slate-600">Elegí una tarjeta para enfocar su ubicación.</p>
+                                    </div>
+                                    {mapServices.map((service) => (
+                                        <MapServiceCard
+                                            key={service.id}
+                                            service={service}
+                                            selected={selectedServiceId === service.id}
+                                            onSelect={() => setSelectedServiceId(service.id)}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="lg:sticky lg:top-24 lg:self-start">
+                                    <ServiceMap
+                                        className="h-[520px] lg:h-[640px]"
+                                        services={mapServices}
+                                        selectedServiceId={selectedServiceId}
+                                        onServiceSelect={setSelectedServiceId}
+                                        userLocation={
+                                            data.latitude && data.longitude
+                                                ? { latitude: Number(data.latitude), longitude: Number(data.longitude) }
+                                                : null
+                                        }
+                                        radiusKm={data.latitude && data.longitude ? Number(data.radius) : undefined}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <MapEmptyState />
+                        )}
+                    </div>
+                ) : view === 'map' ? (
                     <div className="mt-6">
                         {mapServices.length ? (
                             <ServiceMap
                                 services={mapServices}
+                                selectedServiceId={selectedServiceId}
+                                onServiceSelect={setSelectedServiceId}
                                 userLocation={
                                     data.latitude && data.longitude ? { latitude: Number(data.latitude), longitude: Number(data.longitude) } : null
                                 }
                                 radiusKm={data.latitude && data.longitude ? Number(data.radius) : undefined}
                             />
                         ) : (
-                            <div className="prolink-panel p-12 text-center">
-                                <Map className="mx-auto size-10 text-blue-300" />
-                                <h2 className="mt-4 text-xl font-bold">No hay servicios con ubicación válida</h2>
-                                <p className="mt-2 text-slate-600">Probá cambiando los filtros o la distancia de búsqueda.</p>
-                            </div>
+                            <MapEmptyState />
                         )}
                     </div>
                 ) : services.data.length === 0 ? (
@@ -384,4 +428,52 @@ export default function ServicesBrowse({ services, mapServices, filters, categor
 
 function formatArs(value: number | string) {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(value));
+}
+
+function MapServiceCard({ service, selected, onSelect }: { service: MapService; selected: boolean; onSelect: () => void }) {
+    return (
+        <article
+            className={`rounded-2xl border p-4 transition ${
+                selected ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/40'
+            }`}
+        >
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <p className="text-xs font-bold tracking-wider text-blue-700 uppercase">{service.category}</p>
+                    <h2 className="mt-1 font-bold text-slate-950">{service.title}</h2>
+                </div>
+                <strong className="shrink-0 text-blue-700">{formatArs(service.price)}</strong>
+            </div>
+            <p className="mt-2 text-sm text-slate-600">{service.user.name}</p>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                <span className="flex items-center gap-1">
+                    <MapPin className="size-3.5 text-blue-700" /> {service.location || 'Ubicación registrada'}
+                </span>
+                {service.distance_km != null && <strong className="text-blue-800">{service.distance_km} km</strong>}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                    type="button"
+                    onClick={onSelect}
+                    aria-pressed={selected}
+                    className="rounded-lg bg-blue-100 px-3 py-2 text-sm font-bold text-blue-800 transition hover:bg-blue-200"
+                >
+                    {selected ? 'Ubicación enfocada' : 'Ver en mapa'}
+                </button>
+                <Link href={route('services.show', service.id)} className="inline-flex items-center px-2 py-2 text-sm font-bold text-blue-700">
+                    Ver servicio <ArrowRight className="ml-1 size-4" />
+                </Link>
+            </div>
+        </article>
+    );
+}
+
+function MapEmptyState() {
+    return (
+        <div className="prolink-panel p-12 text-center">
+            <Map className="mx-auto size-10 text-blue-300" />
+            <h2 className="mt-4 text-xl font-bold">No hay servicios con ubicación válida</h2>
+            <p className="mt-2 text-slate-600">Probá cambiando los filtros o la distancia de búsqueda.</p>
+        </div>
+    );
 }

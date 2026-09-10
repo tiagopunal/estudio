@@ -245,6 +245,7 @@ export default function ProfilesEdit({ profile }: Props) {
                                     longitude={data.longitude}
                                     title="Ubicación profesional"
                                     onChange={(latitude, longitude) => setData((current) => ({ ...current, latitude, longitude }))}
+                                    onAddressChange={(location) => setData('location', location)}
                                 />
                             </div>
                             <InputError message={errors.latitude || errors.longitude} className="mt-3" />

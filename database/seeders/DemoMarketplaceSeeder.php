@@ -49,6 +49,8 @@ class DemoMarketplaceSeeder extends Seeder
                     'description' => "Profesional de {$profession} con experiencia, atención responsable y presupuestos claros.",
                     'phone' => '+54 9 11 '.str_pad((string) (10000000 + $index), 8, '0', STR_PAD_LEFT),
                     'location' => $location,
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
                     'profession' => $profession,
                     'experience_years' => 3 + ($index % 12),
                     'skills' => "Atención personalizada, puntualidad, experiencia en {$profession}",

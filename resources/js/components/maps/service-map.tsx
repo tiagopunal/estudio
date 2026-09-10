@@ -20,14 +20,34 @@ interface ServiceMapProps {
     userLocation?: { latitude: number; longitude: number } | null;
     radiusKm?: number;
     className?: string;
+    selectedServiceId?: number | null;
+    onServiceSelect?: (serviceId: number) => void;
+    originLabel?: string;
 }
 
 const argentinaCenter: [number, number] = [-38.4161, -63.6167];
 
-export function ServiceMap({ services, userLocation, radiusKm, className = 'h-[560px]' }: ServiceMapProps) {
-    const locatedServices = services.filter((service) => Number.isFinite(Number(service.latitude)) && Number.isFinite(Number(service.longitude)));
-    const points = locatedServices.map((service) => [Number(service.latitude), Number(service.longitude)] as [number, number]);
-    if (userLocation) points.push([userLocation.latitude, userLocation.longitude]);
+export function ServiceMap({
+    services,
+    userLocation,
+    radiusKm,
+    className = 'h-[560px]',
+    selectedServiceId,
+    onServiceSelect,
+    originLabel = 'Tu ubicación aproximada',
+}: ServiceMapProps) {
+    const locatedServices = useMemo(
+        () => services.filter((service) => Number.isFinite(Number(service.latitude)) && Number.isFinite(Number(service.longitude))),
+        [services],
+    );
+    const userLatitude = userLocation?.latitude;
+    const userLongitude = userLocation?.longitude;
+    const points = useMemo(() => {
+        const locations = locatedServices.map((service) => [Number(service.latitude), Number(service.longitude)] as [number, number]);
+        if (userLatitude != null && userLongitude != null) locations.push([userLatitude, userLongitude]);
+        return locations;
+    }, [locatedServices, userLatitude, userLongitude]);
+    const selectedService = locatedServices.find((service) => service.id === selectedServiceId);
 
     return (
         <div className={`prolink-map overflow-hidden rounded-3xl border border-blue-200 bg-blue-50 ${className}`}>
@@ -39,13 +59,15 @@ export function ServiceMap({ services, userLocation, radiusKm, className = 'h-[5
             >
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <FitMap points={points} />
+                <ResizeMap />
+                <FocusService service={selectedService} />
                 {userLocation && (
                     <>
                         <Marker position={[userLocation.latitude, userLocation.longitude]} icon={userIcon}>
-                            <Popup>Tu ubicación aproximada</Popup>
+                            <Popup>{originLabel}</Popup>
                         </Marker>
                         {radiusKm && (
                             <Circle
@@ -57,7 +79,13 @@ export function ServiceMap({ services, userLocation, radiusKm, className = 'h-[5
                     </>
                 )}
                 {locatedServices.map((service) => (
-                    <Marker key={service.id} position={[Number(service.latitude), Number(service.longitude)]} icon={serviceIcon}>
+                    <Marker
+                        key={service.id}
+                        position={[Number(service.latitude), Number(service.longitude)]}
+                        icon={service.id === selectedServiceId ? selectedServiceIcon : serviceIcon}
+                        eventHandlers={{ click: () => onServiceSelect?.(service.id) }}
+                        zIndexOffset={service.id === selectedServiceId ? 1000 : 0}
+                    >
                         <Popup minWidth={220}>
                             <p className="text-xs font-bold tracking-wider text-blue-700 uppercase">{service.category}</p>
                             <h3 className="mt-1 text-base font-bold text-slate-950">{service.title}</h3>
@@ -76,6 +104,33 @@ export function ServiceMap({ services, userLocation, radiusKm, className = 'h-[5
             </MapContainer>
         </div>
     );
+}
+
+function ResizeMap() {
+    const map = useMap();
+
+    useEffect(() => {
+        const resize = () => map.invalidateSize();
+        const frame = requestAnimationFrame(resize);
+        window.addEventListener('resize', resize);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('resize', resize);
+        };
+    }, [map]);
+
+    return null;
+}
+
+function FocusService({ service }: { service?: MapService }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!service) return;
+        map.flyTo([Number(service.latitude), Number(service.longitude)], Math.max(map.getZoom(), 14), { duration: 0.6 });
+    }, [map, service]);
+
+    return null;
 }
 
 function FitMap({ points }: { points: [number, number][] }) {
@@ -97,6 +152,13 @@ const serviceIcon = L.divIcon({
     iconSize: [42, 42],
     iconAnchor: [21, 42],
     popupAnchor: [0, -40],
+});
+const selectedServiceIcon = L.divIcon({
+    className: '',
+    html: '<div class="prolink-map-marker prolink-map-marker-selected">$</div>',
+    iconSize: [48, 48],
+    iconAnchor: [24, 48],
+    popupAnchor: [0, -46],
 });
 const userIcon = L.divIcon({ className: '', html: '<div class="prolink-user-marker"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
 

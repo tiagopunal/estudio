@@ -4,7 +4,9 @@ La plataforma usa Leaflet, React Leaflet y las teselas de OpenStreetMap. No requ
 
 ## Funcionalidades implementadas
 
-- Vista Lista / Mapa en `Explorar servicios`.
+- Vistas Lista, Mapa y Combinada en `Explorar servicios`.
+- Vista combinada por defecto con tarjetas y mapa sincronizados.
+- Selección de tarjetas para enfocar su marcador y selección de marcadores desde el mapa.
 - Marcadores con servicio, profesional, precio, zona y acceso al detalle.
 - Detección opcional de la ubicación del dispositivo.
 - Filtro combinado por texto, categoría, precio y radio de 10 a 500 km.
@@ -13,6 +15,7 @@ La plataforma usa Leaflet, React Leaflet y las teselas de OpenStreetMap. No requ
 - Selector de coordenadas al crear o editar un servicio.
 - Selector de ubicación del perfil profesional.
 - Búsqueda manual de direcciones limitada a Argentina.
+- La dirección elegida completa automáticamente el campo `Ciudad o zona`.
 - Mapas en el detalle del servicio y en el perfil público.
 - Los servicios sin coordenadas siguen disponibles en la lista, pero no aparecen en el mapa.
 
@@ -42,10 +45,11 @@ php artisan migrate --path=database/migrations/2026_08_30_000001_add_coordinates
 
 ## Uso
 
-1. En `Explorar servicios`, seleccionar `Mapa` para ver los servicios que tienen coordenadas.
+1. En `Explorar servicios`, usar la vista combinada para comparar tarjetas y ubicaciones, o elegir las vistas `Lista` y `Mapa`.
 2. Presionar `Usar mi ubicación` y aceptar el permiso del navegador para buscar por cercanía.
 3. Elegir un radio y volver a aplicar el filtro cuando se quiera modificar la distancia.
 4. Al publicar o editar un servicio, buscar una dirección argentina, hacer clic en el mapa o usar la ubicación del dispositivo.
+5. Ejecutar `php artisan db:seed` para cargar 15 profesionales de demostración distribuidos por Argentina con servicios geolocalizados.
 
 ## Privacidad
 

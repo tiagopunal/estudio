@@ -28,6 +28,15 @@
     box-shadow: 0 8px 20px rgb(15 23 42 / 30%);
 }
 
+.prolink-map-marker-selected {
+    transform: scale(1.12);
+    border-color: white;
+    background: #172554;
+    box-shadow:
+        0 0 0 5px rgb(59 130 246 / 25%),
+        0 10px 25px rgb(15 23 42 / 35%);
+}
+
 .prolink-user-marker {
     width: 18px;
     height: 18px;

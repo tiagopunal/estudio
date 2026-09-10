@@ -23,7 +23,8 @@ export default function ProfilesShow({ profile, receivedReviews }: Props) {
             longitude: service.longitude!,
             user: { name: d?.full_name || profile.name },
         }));
-    const professionalLocation = d?.latitude && d?.longitude ? { latitude: Number(d.latitude), longitude: Number(d.longitude) } : null;
+    const professionalLocation =
+        d?.latitude != null && d?.longitude != null ? { latitude: Number(d.latitude), longitude: Number(d.longitude) } : null;
     return (
         <div className="flex min-h-screen flex-col bg-[#f8f7fc]">
             <Head title={`Perfil de ${profile.name}`} />
@@ -94,7 +95,12 @@ export default function ProfilesShow({ profile, receivedReviews }: Props) {
                             <h2 className="mt-2 text-2xl font-bold text-slate-950">Ubicación y servicios publicados</h2>
                             <p className="mt-1 text-slate-600">La ubicación es aproximada y ayuda a encontrar profesionales cercanos.</p>
                         </div>
-                        <ServiceMap className="h-[460px]" services={locatedServices} userLocation={professionalLocation} />
+                        <ServiceMap
+                            className="h-[460px]"
+                            services={locatedServices}
+                            userLocation={professionalLocation}
+                            originLabel="Zona de trabajo aproximada del profesional"
+                        />
                     </section>
                 )}
             </main>
