@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class BookingRulesTest extends TestCase
@@ -30,6 +31,35 @@ class BookingRulesTest extends TestCase
             'service_id' => $service->id,
             'status' => 'pending',
         ]);
+    }
+
+    public function test_provider_sees_the_received_request_and_confirmation_is_visible_to_the_customer(): void
+    {
+        $customer = User::factory()->create();
+        $professional = User::factory()->professional()->create();
+        $service = $this->serviceFor($professional);
+        $booking = $this->booking($customer, $service);
+
+        $this->actingAs($professional)
+            ->get('/bookings')
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('bookings', 1)
+                ->where('bookings.0.id', $booking->id)
+                ->where('bookings.0.user.id', $customer->id));
+
+        $this->patch("/bookings/{$booking->id}/status", ['status' => 'confirmed'])
+            ->assertRedirect(route('bookings.show', $booking));
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'confirmed',
+        ]);
+
+        $this->actingAs($customer)
+            ->get('/bookings')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('bookings.0.id', $booking->id)
+                ->where('bookings.0.status', 'confirmed'));
     }
 
     public function test_a_paused_service_cannot_be_booked(): void

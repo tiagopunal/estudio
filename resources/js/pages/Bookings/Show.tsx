@@ -34,6 +34,7 @@ interface Booking {
 interface Props {
     booking: Booking;
     canManageStatus: boolean;
+    isReceivedBooking: boolean;
     canCancelPending: boolean;
     canCustomerCancelConfirmed: boolean;
 }
@@ -69,7 +70,7 @@ function formatBookingDate(value: string) {
     return parsed.toLocaleString();
 }
 
-export default function BookingsShow({ booking, canManageStatus, canCancelPending, canCustomerCancelConfirmed }: Props) {
+export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canCancelPending, canCustomerCancelConfirmed }: Props) {
     const { data, setData, patch, processing, errors } = useForm({
         status: booking.status,
     });
@@ -109,7 +110,11 @@ export default function BookingsShow({ booking, canManageStatus, canCancelPendin
                                     {statusLabels[booking.status]}
                                 </span>
                             </div>
-                            <p className="prolink-subtitle">{statusSubtitles[booking.status]}</p>
+                            <p className="prolink-subtitle">
+                                {isReceivedBooking && booking.status === 'pending'
+                                    ? `${booking.user.name} está esperando que aceptes o rechaces esta solicitud.`
+                                    : statusSubtitles[booking.status]}
+                            </p>
                         </div>
                         <Link href={route('bookings.index')} className="prolink-secondary self-start sm:self-auto">
                             <ArrowLeft className="size-4" />

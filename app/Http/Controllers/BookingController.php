@@ -112,6 +112,7 @@ class BookingController extends Controller
         return Inertia::render('Bookings/Show', [
             'booking' => $booking,
             'canManageStatus' => $user->isProfessional() && $user->id === $booking->service->user_id,
+            'isReceivedBooking' => $user->id === $booking->service->user_id && $user->id !== $booking->user_id,
             'canCancelPending' => ($user->id === $booking->user_id)
                 || ($user->isProfessional() && $user->id === $booking->service->user_id),
             'canCustomerCancelConfirmed' => $user->id === $booking->user_id

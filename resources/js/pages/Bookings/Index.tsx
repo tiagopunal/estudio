@@ -1,12 +1,15 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
-import { CalendarDays, Clock3, Plus, UserRound } from 'lucide-react';
+import { type SharedData } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { CalendarCheck2, CalendarDays, Check, Clock3, Plus, UserRound, X } from 'lucide-react';
 import { useState } from 'react';
 interface Booking {
     id: number;
+    user_id: number;
     date: string;
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
     service: { id: number; title: string; price: number; user: { id: number; name: string } };
+    user: { id: number; name: string; email: string };
 }
 const labels = { pending: 'Pendiente', confirmed: 'Confirmada', completed: 'Completada', cancelled: 'Cancelada' };
 const colors = {
@@ -20,7 +23,10 @@ const format = (v: string) => {
     return Number.isNaN(d.getTime()) ? 'Fecha por confirmar' : d.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
 };
 export default function BookingsIndex({ bookings }: { bookings: Booking[] }) {
+    const { auth } = usePage<SharedData>().props;
     const [filter, setFilter] = useState<'all' | Booking['status']>('all');
+    const [section, setSection] = useState<'received' | 'made'>(auth.user?.role === 'professional' ? 'received' : 'made');
+    const [updating, setUpdating] = useState<number | null>(null);
     const filters: Array<{ key: 'all' | Booking['status']; label: string }> = [
         { key: 'all', label: 'Todas' },
         { key: 'pending', label: 'Pendientes' },
@@ -28,22 +34,51 @@ export default function BookingsIndex({ bookings }: { bookings: Booking[] }) {
         { key: 'completed', label: 'Completadas' },
         { key: 'cancelled', label: 'Canceladas' },
     ];
-    const visibleBookings = filter === 'all' ? bookings : bookings.filter((booking) => booking.status === filter);
+    const receivedBookings = bookings.filter(
+        (booking) => booking.service.user.id === auth.user?.id && booking.user_id !== auth.user?.id,
+    );
+    const madeBookings = bookings.filter((booking) => booking.user_id === auth.user?.id);
+    const sectionBookings = section === 'received' ? receivedBookings : madeBookings;
+    const visibleBookings = filter === 'all' ? sectionBookings : sectionBookings.filter((booking) => booking.status === filter);
+    const updateStatus = (booking: Booking, status: 'confirmed' | 'cancelled') => {
+        setUpdating(booking.id);
+        router.patch(route('bookings.updateStatus', booking.id), { status }, { preserveScroll: true, onFinish: () => setUpdating(null) });
+    };
     return (
         <AppLayout breadcrumbs={[{ title: 'Mis reservas', href: '/bookings' }]}>
             <Head title="Mis reservas" />
             <div className="prolink-page">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="prolink-kicker">Tus contrataciones</p>
-                        <h1 className="prolink-title mt-2">Mis reservas</h1>
-                        <p className="prolink-subtitle">Consultá tus citas y el estado de cada servicio.</p>
+                        <p className="prolink-kicker">Agenda de servicios</p>
+                        <h1 className="prolink-title mt-2">Reservas</h1>
+                        <p className="prolink-subtitle">Gestioná solicitudes recibidas y servicios que contrataste.</p>
                     </div>
                     <Link href={route('services.browse')} className="prolink-primary">
                         <Plus />
                         Nueva reserva
                     </Link>
                 </div>
+                {auth.user?.role === 'professional' && (
+                    <div className="mt-8 grid gap-3 rounded-2xl border border-blue-200 bg-white p-2 sm:grid-cols-2">
+                        <button
+                            type="button"
+                            onClick={() => { setSection('received'); setFilter('all'); }}
+                            className={`flex items-center justify-between rounded-xl px-5 py-4 text-left font-bold transition ${section === 'received' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-700 hover:bg-blue-50'}`}
+                        >
+                            <span className="flex items-center gap-3"><CalendarCheck2 className="size-5" /> Solicitudes recibidas</span>
+                            <span className={`rounded-full px-2.5 py-1 text-xs ${section === 'received' ? 'bg-white/20' : 'bg-blue-100 text-blue-800'}`}>{receivedBookings.length}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setSection('made'); setFilter('all'); }}
+                            className={`flex items-center justify-between rounded-xl px-5 py-4 text-left font-bold transition ${section === 'made' ? 'bg-blue-700 text-white shadow-md' : 'text-slate-700 hover:bg-blue-50'}`}
+                        >
+                            <span className="flex items-center gap-3"><CalendarDays className="size-5" /> Mis contrataciones</span>
+                            <span className={`rounded-full px-2.5 py-1 text-xs ${section === 'made' ? 'bg-white/20' : 'bg-blue-100 text-blue-800'}`}>{madeBookings.length}</span>
+                        </button>
+                    </div>
+                )}
                 <div className="border-border mt-8 flex gap-6 overflow-x-auto border-b">
                     {filters.map((item) => (
                         <button
@@ -54,7 +89,9 @@ export default function BookingsIndex({ bookings }: { bookings: Booking[] }) {
                         >
                             {item.label}
                             <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800">
-                                {item.key === 'all' ? bookings.length : bookings.filter((booking) => booking.status === item.key).length}
+                                {item.key === 'all'
+                                    ? sectionBookings.length
+                                    : sectionBookings.filter((booking) => booking.status === item.key).length}
                             </span>
                         </button>
                     ))}
@@ -62,11 +99,17 @@ export default function BookingsIndex({ bookings }: { bookings: Booking[] }) {
                 {visibleBookings.length === 0 ? (
                     <div className="prolink-panel mt-8 p-12 text-center">
                         <CalendarDays className="mx-auto size-12 text-blue-300" />
-                        <h2 className="mt-4 text-xl font-bold">No tenés reservas todavía</h2>
-                        <p className="mt-2 text-slate-600">Explorá el marketplace para encontrar tu próximo servicio.</p>
-                        <Link href={route('services.browse')} className="prolink-primary mt-6">
-                            Explorar servicios
-                        </Link>
+                        <h2 className="mt-4 text-xl font-bold">
+                            {section === 'received' ? 'No tenés solicitudes recibidas' : 'No tenés contrataciones todavía'}
+                        </h2>
+                        <p className="mt-2 text-slate-600">
+                            {section === 'received'
+                                ? 'Cuando alguien reserve uno de tus servicios, la solicitud aparecerá acá.'
+                                : 'Explorá el marketplace para encontrar tu próximo servicio.'}
+                        </p>
+                        {section === 'made' && (
+                            <Link href={route('services.browse')} className="prolink-primary mt-6">Explorar servicios</Link>
+                        )}
                     </div>
                 ) : (
                     <div className="mt-8 grid gap-5 xl:grid-cols-2">
@@ -97,14 +140,34 @@ export default function BookingsIndex({ bookings }: { bookings: Booking[] }) {
                                         <div className="mt-4 space-y-2 text-sm text-slate-600">
                                             <p className="flex items-center gap-2">
                                                 <UserRound className="size-4" />
-                                                {booking.service.user.name}
+                                                {section === 'received' ? `Cliente: ${booking.user.name}` : `Profesional: ${booking.service.user.name}`}
                                             </p>
                                             <p className="flex items-center gap-2">
                                                 <Clock3 className="size-4" />
                                                 {format(booking.date)}
                                             </p>
                                         </div>
-                                        <Link href={route('bookings.show', booking.id)} className="prolink-primary mt-5 w-full">
+                                        {section === 'received' && booking.status === 'pending' ? (
+                                            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                                                <button
+                                                    type="button"
+                                                    disabled={updating === booking.id}
+                                                    onClick={() => updateStatus(booking, 'confirmed')}
+                                                    className="prolink-primary"
+                                                >
+                                                    <Check className="size-4" /> Aceptar
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    disabled={updating === booking.id}
+                                                    onClick={() => updateStatus(booking, 'cancelled')}
+                                                    className="prolink-secondary text-red-700"
+                                                >
+                                                    <X className="size-4" /> Rechazar
+                                                </button>
+                                            </div>
+                                        ) : null}
+                                        <Link href={route('bookings.show', booking.id)} className={`${section === 'received' && booking.status === 'pending' ? 'prolink-secondary' : 'prolink-primary'} mt-3 w-full`}>
                                             Ver detalles
                                         </Link>
                                     </div>
