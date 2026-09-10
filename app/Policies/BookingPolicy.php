@@ -20,7 +20,7 @@ class BookingPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isClient();
+        return true;
     }
 
     /**

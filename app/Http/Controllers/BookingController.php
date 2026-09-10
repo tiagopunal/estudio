@@ -53,10 +53,8 @@ class BookingController extends Controller
     {
         $user = auth()->user();
 
-        if (! $user || ! $user->isClient()) {
-            return back()
-                ->withErrors(['service_id' => 'Solo los clientes pueden crear reservas'])
-                ->withInput();
+        if (! $user) {
+            abort(403);
         }
 
         $service = Service::find($request->service_id);
@@ -114,9 +112,9 @@ class BookingController extends Controller
         return Inertia::render('Bookings/Show', [
             'booking' => $booking,
             'canManageStatus' => $user->isProfessional() && $user->id === $booking->service->user_id,
-            'canCancelPending' => ($user->isClient() && $user->id === $booking->user_id)
+            'canCancelPending' => ($user->id === $booking->user_id)
                 || ($user->isProfessional() && $user->id === $booking->service->user_id),
-            'canCustomerCancelConfirmed' => $user->isClient() && $user->id === $booking->user_id
+            'canCustomerCancelConfirmed' => $user->id === $booking->user_id
                 && $this->canCustomerCancelConfirmedBooking($booking),
         ]);
     }
@@ -141,7 +139,7 @@ class BookingController extends Controller
         }
 
         $isProvider = $user->isProfessional() && $user->id === $booking->service->user_id;
-        $isCustomer = $user->isClient() && $user->id === $booking->user_id;
+        $isCustomer = $user->id === $booking->user_id;
 
         if ($currentStatus === 'pending' && $newStatus === 'confirmed' && ! $isProvider) {
             return back()->withErrors(['status' => 'Solo el profesional dueño del servicio puede confirmar reservas']);

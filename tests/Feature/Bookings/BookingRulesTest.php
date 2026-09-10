@@ -12,16 +12,24 @@ class BookingRulesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_professional_cannot_create_a_booking(): void
+    public function test_a_professional_can_book_another_professionals_service(): void
     {
         $professional = User::factory()->professional()->create();
         $service = $this->serviceFor(User::factory()->professional()->create());
 
         $this->actingAs($professional)
-            ->post('/bookings', $this->payload($service))
-            ->assertSessionHasErrors('service_id');
+            ->get("/bookings/create?service_id={$service->id}")
+            ->assertOk();
 
-        $this->assertDatabaseCount('bookings', 0);
+        $this->actingAs($professional)
+            ->post('/bookings', $this->payload($service))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('bookings', [
+            'user_id' => $professional->id,
+            'service_id' => $service->id,
+            'status' => 'pending',
+        ]);
     }
 
     public function test_a_paused_service_cannot_be_booked(): void
