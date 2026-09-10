@@ -124,7 +124,7 @@ export default function ServicesEdit({ service }: { service: Service }) {
                             <Field label="Latitud (opcional)" error={errors.latitude}>
                                 <Input
                                     type="number"
-                                    step="0.0001"
+                                    step="any"
                                     min="-90"
                                     max="90"
                                     value={data.latitude}
@@ -135,7 +135,7 @@ export default function ServicesEdit({ service }: { service: Service }) {
                             <Field label="Longitud (opcional)" error={errors.longitude}>
                                 <Input
                                     type="number"
-                                    step="0.0001"
+                                    step="any"
                                     min="-180"
                                     max="180"
                                     value={data.longitude}
