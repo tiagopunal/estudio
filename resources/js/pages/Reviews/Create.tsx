@@ -1,7 +1,7 @@
 ﻿import InputError from '@/components/input-error';
+import RatingStars from '@/components/rating-stars';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
@@ -99,21 +99,26 @@ export default function Create({ bookings = [], booking, selectedServiceId }: Cr
                     )}
 
                     <div>
-                        <Label htmlFor="rating">Calificación</Label>
-                        <Input
-                            id="rating"
-                            type="number"
-                            min={1}
-                            max={5}
-                            value={data.rating}
-                            onChange={(event) => setData('rating', Number(event.target.value))}
-                            placeholder="1 a 5"
-                        />
+                        <Label>Calificación (1 a 5 estrellas)</Label>
+                        <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50/60 p-4">
+                            <RatingStars
+                                rating={data.rating}
+                                onRatingChange={(rating) => setData('rating', rating)}
+                                readOnly={false}
+                                size="lg"
+                                showValue
+                            />
+                            <p className="mt-2 text-sm text-slate-600">
+                                {data.rating === 0
+                                    ? 'Tocá una estrella para elegir tu puntuación.'
+                                    : 'Elegiste ' + data.rating + ' de 5 estrellas.'}
+                            </p>
+                        </div>
                         <InputError message={errors.rating} />
                     </div>
 
                     <div>
-                        <Label htmlFor="comment">Comentario</Label>
+                        <Label htmlFor="comment">Comentario (opcional)</Label>
                         <Textarea
                             id="comment"
                             value={data.comment}
@@ -124,7 +129,7 @@ export default function Create({ bookings = [], booking, selectedServiceId }: Cr
                         <InputError message={errors.comment} />
                     </div>
 
-                    <Button type="submit" disabled={processing}>
+                    <Button type="submit" disabled={processing || data.rating === 0 || !data.booking_id}>
                         {processing ? 'Guardando...' : 'Crear reseña'}
                     </Button>
                 </form>
