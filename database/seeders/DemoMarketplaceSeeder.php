@@ -13,9 +13,35 @@ class DemoMarketplaceSeeder extends Seeder
 {
     public function run(): void
     {
+        $imageMap = [
+            'Electricidad' => 'images/services/electricidad-1.jpg',
+            'Plomería' => 'images/services/extra/plomeria-1.jpg',
+            'Limpieza' => 'images/services/extra/limpieza-1.jpg',
+            'Jardinería' => 'images/services/extra/jardineria-1.jpg',
+            'Educación' => 'images/services/extra/educacion-1.jpg',
+            'Clases particulares' => 'images/services/extra/educacion-1.jpg',
+            'Tecnología' => 'images/services/extra/tecnologia-1.jpg',
+            'Soporte técnico' => 'images/services/extra/tecnologia-1.jpg',
+            'Diseño' => 'images/services/extra/diseno-1.jpg',
+            'Diseño gráfico' => 'images/services/extra/diseno-1.jpg',
+            'Pintura' => 'images/services/extra/pintura-1.jpg',
+            'Mascotas' => 'images/services/extra/perros-1.jpg',
+            'Cuidado de mascotas' => 'images/services/extra/perros-1.jpg',
+            'Construcción' => 'images/services/extra/construccion-1.jpg',
+            'Belleza' => 'images/services/extra/belleza-1.jpg',
+            'Fotografía' => 'images/services/extra/fotografia-1.jpg',
+            'Administración' => 'images/services/extra/administracion-1.jpg',
+            'Climatización' => 'images/services/extra/climatizacion-1.jpg',
+            'Entrenamiento' => 'images/services/extra/entrenamiento-1.jpg',
+            'Entrenamiento personal' => 'images/services/extra/entrenamiento-1.jpg',
+        ];
+
         $professionals = [
             ['Mariana López', 'mariana.lopez@demo.prolink.com', 'Plomería', 'Rosario, Santa Fe', 'Reparación de pérdidas y cañerías', 'Soluciono pérdidas, destapaciones y problemas de presión con atención rápida y materiales de primera calidad.', 28000, 'Plomería', -32.9468, -60.6393, 5],
             ['Lucas Fernández', 'lucas.fernandez@demo.prolink.com', 'Electricidad', 'Córdoba Capital, Córdoba', 'Electricista matriculado a domicilio', 'Instalaciones, tableros, cortocircuitos y mantenimiento eléctrico para hogares y comercios.', 35000, 'Electricidad', -31.4201, -64.1888, 5],
+            ['Carlos Aguirre', 'carlos.aguirre@demo.prolink.com', 'Electricidad', 'Mendoza Capital, Mendoza', 'Reparación de cables eléctricos', 'Diagnóstico, aislamiento y reparación de cables, tomacorrientes y puntos eléctricos con seguridad y materiales.', 28000, 'Electricidad', -32.8895, -68.8458, 5],
+            ['Juan Cruz García', 'juan.garcia@demo.prolink.com', 'Electricidad', 'San Isidro, Buenos Aires', 'Instalación de cableado y tomacorrientes', 'Cableado nuevo, cambio de enchufes, tomas y puntos de luz para viviendas, locales y pequeños comercios.', 45000, 'Electricidad', -34.4704, -58.5388, 5],
+            ['Manuel Rojas', 'manuel.rojas@demo.prolink.com', 'Electricidad', 'La Rioja, La Rioja', 'Diagnóstico de fallas eléctricas', 'Revisión de tablero, corte de corriente y reparación de cableado con atención rápida y presupuesto claro.', 32000, 'Electricidad', -29.4100, -66.8500, 4],
             ['Sofía Méndez', 'sofia.mendez@demo.prolink.com', 'Limpieza', 'Mendoza Capital, Mendoza', 'Limpieza profunda de hogares', 'Limpieza integral de cocinas, baños y ambientes con productos incluidos y turnos coordinados.', 42000, 'Limpieza', -32.8895, -68.8458, 4],
             ['Mateo González', 'mateo.gonzalez@demo.prolink.com', 'Jardinería', 'La Plata, Buenos Aires', 'Mantenimiento de jardines', 'Corte de césped, poda, limpieza de canteros y mantenimiento periódico de espacios verdes.', 30000, 'Jardinería', -34.9205, -57.9536, 5],
             ['Valentina Ruiz', 'valentina.ruiz@demo.prolink.com', 'Educación', 'San Miguel de Tucumán, Tucumán', 'Clases particulares de matemática', 'Apoyo para nivel secundario e ingreso universitario con material personalizado y seguimiento semanal.', 12000, 'Clases particulares', -26.8083, -65.2176, 5],
@@ -61,6 +87,7 @@ class DemoMarketplaceSeeder extends Seeder
                     'description' => $description,
                     'price' => $price,
                     'category' => $category,
+                    'image_url' => $imageMap[$category] ?? 'images/services/casa-1.jpg',
                     'location' => $location,
                     'latitude' => $latitude,
                     'longitude' => $longitude,
