@@ -13,8 +13,6 @@ interface LocationPickerProps {
 }
 
 const argentinaCenter: [number, number] = [-38.4161, -63.6167];
-const geocodingSearchUrl = import.meta.env.VITE_GEOCODING_SEARCH_URL || 'https://nominatim.openstreetmap.org/search';
-
 interface AddressResult {
     place_id: number;
     display_name: string;
@@ -67,24 +65,22 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
         setResults([]);
 
         try {
-            const params = new URLSearchParams({
-                q: query,
-                format: 'jsonv2',
-                addressdetails: '1',
-                limit: '5',
-                countrycodes: 'ar',
+            const response = await fetch(`/api/geocoding/search?q=${encodeURIComponent(query)}`, {
+                headers: { Accept: 'application/json' },
             });
-            const response = await fetch(`${geocodingSearchUrl}?${params.toString()}`, {
-                headers: { 'Accept-Language': 'es-AR,es;q=0.9' },
-            });
+            const payload = (await response.json()) as { data?: AddressResult[]; message?: string };
 
-            if (!response.ok) throw new Error('Address search failed');
+            if (!response.ok) throw new Error(payload.message || 'No pudimos consultar el buscador de direcciones.');
 
-            const matches = (await response.json()) as AddressResult[];
+            const matches = payload.data || [];
             setResults(matches);
             if (!matches.length) setAddressError('No encontramos esa dirección en Argentina. Probá agregando ciudad y provincia.');
-        } catch {
-            setAddressError('No pudimos consultar direcciones ahora. Podés marcar el punto directamente en el mapa.');
+        } catch (error) {
+            setAddressError(
+                error instanceof Error
+                    ? `${error.message} Podés marcar el punto directamente en el mapa.`
+                    : 'No pudimos consultar direcciones ahora. Podés marcar el punto directamente en el mapa.',
+            );
         } finally {
             setSearching(false);
         }

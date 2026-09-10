@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GeocodingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,3 +16,7 @@ Route::get('/test', function () {
         'message' => 'API funcionando correctamente',
     ]);
 });
+
+Route::get('/geocoding/search', [GeocodingController::class, 'search'])
+    ->middleware('throttle:geocoding')
+    ->name('api.geocoding.search');

@@ -31,10 +31,11 @@ npm run dev
 php artisan serve
 ```
 
-El proveedor de búsqueda de direcciones se puede cambiar sin modificar el código:
+Laravel actúa como intermediario para cachear resultados, evitar problemas de CORS y limitar las consultas al proveedor. Se puede cambiar sin modificar el código:
 
 ```env
-VITE_GEOCODING_SEARCH_URL=https://nominatim.openstreetmap.org/search
+GEOCODING_SEARCH_URL=https://nominatim.openstreetmap.org/search
+GEOCODING_USER_AGENT="ProLinkMarketplace/1.0 (+https://tu-dominio.com)"
 ```
 
 Si una base local antigua informa que la columna `role` ya existe por una migración pendiente de otra rama, se puede aplicar solamente la migración geográfica:
@@ -62,7 +63,7 @@ php artisan migrate --path=database/migrations/2026_08_30_000001_add_coordinates
 - La búsqueda de direcciones se ejecuta únicamente al presionar el botón; no funciona como autocompletado.
 - No hay rutas, tiempos de viaje ni navegación GPS.
 - El radio representa distancia geográfica aproximada, no distancia por calles.
-- El servidor público de Nominatim es adecuado para esta demostración y exige como máximo una consulta por segundo. Para producción o alto tráfico se debe configurar un proveedor dedicado mediante `VITE_GEOCODING_SEARCH_URL`.
+- El servidor público de Nominatim es adecuado para esta demostración y exige como máximo una consulta por segundo. Laravel aplica ese límite y guarda cada búsqueda durante 24 horas. Para producción o alto tráfico se debe configurar un proveedor dedicado mediante `GEOCODING_SEARCH_URL`.
 - Las consultas y los mapas muestran atribución a OpenStreetMap.
 
 ## Verificación

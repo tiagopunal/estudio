@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'geocoding' => [
+        'search_url' => env('GEOCODING_SEARCH_URL', 'https://nominatim.openstreetmap.org/search'),
+        'user_agent' => env('GEOCODING_USER_AGENT', 'ProLinkMarketplace/1.0 (+'.env('APP_URL', 'http://localhost').')'),
+    ],
+
 ];
