@@ -84,6 +84,10 @@ class ServiceController extends Controller
     */
     public function show(Service $service)
     {
+        if ($service->status !== 'active' && $service->user_id !== auth()->id()) {
+            abort(404);
+        }
+
         $service->load('user.profile', 'reviews.user', 'bookings');
 
         return Inertia::render('Services/Show', [

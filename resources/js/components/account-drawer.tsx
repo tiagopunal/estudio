@@ -7,7 +7,7 @@ export function AccountDrawer({ user }: { user: User }) {
     const [open, setOpen] = useState(false);
     const avatar = user.profile?.avatar ? `/storage/${user.profile.avatar}` : user.avatar;
     const links = [
-        { label: 'Inicio', href: route('home'), icon: House },
+        { label: 'Dashboard', href: route('dashboard'), icon: House },
         { label: 'Explorar servicios', href: route('services.browse'), icon: Compass },
         { label: 'Mis reservas', href: route('bookings.index'), icon: CalendarDays },
         { label: 'Reseñas', href: route('reviews.index'), icon: Star },

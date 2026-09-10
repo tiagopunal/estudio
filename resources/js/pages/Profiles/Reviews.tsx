@@ -1,117 +1,108 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { Star } from 'lucide-react';
+import { ProLinkFooter } from '@/components/prolink-footer';
+import { ProLinkHeader } from '@/components/prolink-header';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, MessageSquareText, Star } from 'lucide-react';
 
 interface Review {
     id: number;
-    rating: number;
-    comment: string;
+    rating: number | string;
+    comment?: string | null;
     created_at: string;
-    user: {
-        id: number;
-        name: string;
-    };
-    service: {
-        id: number;
-        title: string;
-    };
+    user: { id: number; name: string };
+    service: { id: number; title: string };
 }
 
 interface User {
     id: number;
     name: string;
+    profile?: { full_name?: string | null; profession?: string | null };
 }
 
-interface Props {
-    user: User;
-    reviews: Review[];
-}
-
-export default function ProfilesReviews({ user, reviews }: Props) {
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Inicio', href: '/' },
-        { title: user.name, href: `/profiles/${user.id}` },
-        { title: 'Reseñas', href: `/profiles/${user.id}/reviews` },
-    ];
-
-    const averageRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : 0;
+export default function ProfilesReviews({ user, reviews }: { user: User; reviews: Review[] }) {
+    const displayName = user.profile?.full_name || user.name;
+    const average = reviews.length ? reviews.reduce((sum, review) => sum + Number(review.rating), 0) / reviews.length : 0;
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Reseñas de ${user.name}`} />
+        <div className="flex min-h-screen flex-col bg-[#f8f7fc] text-slate-950">
+            <Head title={`Reseñas de ${displayName}`} />
+            <ProLinkHeader />
+            <main className="prolink-page flex-1">
+                <Link href={`/profiles/${user.id}`} className="inline-flex items-center gap-2 font-bold text-blue-700 hover:text-blue-900">
+                    <ArrowLeft className="size-4" /> Volver al perfil
+                </Link>
 
-            <div className="mx-auto max-w-4xl space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold">Reseñas de {user.name}</h1>
-
-                    {reviews.length > 0 && (
-                        <div className="mt-4 flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                {[...Array(5)].map((_, i) => (
+                <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <p className="prolink-kicker">Opiniones verificadas</p>
+                        <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Reseñas de {displayName}</h1>
+                        <p className="mt-2 text-lg text-slate-700">Experiencias compartidas por clientes de sus servicios.</p>
+                    </div>
+                    <div className="prolink-panel flex items-center gap-4 px-6 py-4">
+                        <span className="text-4xl font-black">{average.toFixed(1)}</span>
+                        <div>
+                            <div className="flex gap-1" aria-label={`${average.toFixed(1)} de 5 estrellas`}>
+                                {[1, 2, 3, 4, 5].map((star) => (
                                     <Star
-                                        key={i}
-                                        size={24}
-                                        className={
-                                            i < Math.round(parseFloat(averageRating as string)) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                        }
+                                        key={star}
+                                        className={`size-5 ${star <= Math.round(average) ? 'fill-amber-400 text-amber-500' : 'text-slate-300'}`}
                                     />
                                 ))}
                             </div>
-                            <div>
-                                <p className="text-2xl font-bold">{averageRating}/5</p>
-                                <p className="text-gray-600">
-                                    Basado en {reviews.length} reseña{reviews.length !== 1 ? 's' : ''}
-                                </p>
-                            </div>
+                            <p className="mt-1 text-sm font-semibold text-slate-600">
+                                {reviews.length} {reviews.length === 1 ? 'reseña' : 'reseñas'}
+                            </p>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {reviews.length === 0 ? (
-                    <Card className="p-12 text-center">
-                        <p className="text-gray-500">{user.name} aún no tiene reseñas</p>
-                    </Card>
+                    <section className="prolink-panel mt-8 flex min-h-72 flex-col items-center justify-center p-10 text-center">
+                        <span className="flex size-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                            <MessageSquareText className="size-8" />
+                        </span>
+                        <h2 className="mt-5 text-2xl font-bold">Todavía no recibió reseñas</h2>
+                        <p className="mt-2 text-slate-600">Las opiniones aparecerán cuando se completen y califiquen sus servicios.</p>
+                    </section>
                 ) : (
-                    <div className="grid gap-4">
+                    <section className="mt-8 space-y-5">
                         {reviews.map((review) => (
-                            <Card key={review.id} className="p-6">
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
+                            <article key={review.id} className="prolink-panel p-6 sm:p-7">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex size-11 items-center justify-center rounded-full bg-blue-100 font-black text-blue-800">
+                                            {review.user.name.charAt(0).toUpperCase()}
+                                        </span>
                                         <div>
-                                            <p className="font-semibold">{review.user.name}</p>
-                                            <p className="text-sm text-gray-600">en {review.service.title}</p>
-                                        </div>
-                                        <div className="flex gap-1">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    size={18}
-                                                    className={i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
-                                                />
-                                            ))}
+                                            <p className="font-bold">{review.user.name}</p>
+                                            <Link
+                                                href={`/services/${review.service.id}`}
+                                                className="text-sm font-semibold text-blue-700 hover:underline"
+                                            >
+                                                {review.service.title}
+                                            </Link>
                                         </div>
                                     </div>
-
-                                    <p className="text-gray-700">{review.comment}</p>
-
-                                    <p className="text-xs text-gray-500">{new Date(review.created_at).toLocaleDateString()}</p>
+                                    <div className="flex gap-1" aria-label={`${review.rating} de 5 estrellas`}>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Star
+                                                key={star}
+                                                className={`size-5 ${star <= Number(review.rating) ? 'fill-amber-400 text-amber-500' : 'text-slate-300'}`}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                            </Card>
+                                <p className="mt-5 text-lg leading-8 text-slate-700">
+                                    {review.comment || 'El cliente dejó una calificación sin comentario.'}
+                                </p>
+                                <p className="mt-4 text-sm font-semibold text-slate-500">
+                                    {new Intl.DateTimeFormat('es-AR', { dateStyle: 'long' }).format(new Date(review.created_at))}
+                                </p>
+                            </article>
                         ))}
-                    </div>
+                    </section>
                 )}
-
-                <div className="flex gap-4">
-                    <a href={`/profiles/${user.id}`} className="flex-1">
-                        <Button variant="outline" className="w-full">
-                            Volver al Perfil
-                        </Button>
-                    </a>
-                </div>
-            </div>
-        </AppLayout>
+            </main>
+            <ProLinkFooter />
+        </div>
     );
 }

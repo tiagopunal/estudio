@@ -31,6 +31,7 @@ class BookingController extends Controller
     {
         $query = Service::query()
             ->with('user')
+            ->where('status', 'active')
             ->where('user_id', '!=', auth()->id());
 
         if ($request->filled('service_id')) {
@@ -47,6 +48,12 @@ class BookingController extends Controller
     public function store(StoreBookingRequest $request)
     {
         $service = Service::findOrFail($request->service_id);
+
+        if ($service->status !== 'active') {
+            return back()
+                ->withErrors(['service_id' => 'Este servicio ya no está disponible para reservas'])
+                ->withInput();
+        }
 
         if ($service->user_id === auth()->id()) {
             return back()

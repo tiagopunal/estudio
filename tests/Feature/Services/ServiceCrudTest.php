@@ -95,6 +95,16 @@ class ServiceCrudTest extends TestCase
             ->assertDontSee('Pintura interior');
     }
 
+    public function test_inactive_service_is_private_but_remains_visible_to_its_owner(): void
+    {
+        $owner = User::factory()->create(['role' => Role::PROFESSIONAL]);
+        $service = $this->createService($owner, ['status' => 'paused']);
+
+        $this->get("/services/{$service->id}")->assertNotFound();
+        $this->actingAs(User::factory()->create())->get("/services/{$service->id}")->assertNotFound();
+        $this->actingAs($owner)->get("/services/{$service->id}")->assertOk();
+    }
+
     /**
      * @param  array<string, mixed>  $overrides
      * @return array<string, mixed>
