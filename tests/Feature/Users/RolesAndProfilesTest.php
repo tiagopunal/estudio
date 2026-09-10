@@ -4,6 +4,7 @@ namespace Tests\Feature\Users;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RolesAndProfilesTest extends TestCase
@@ -124,5 +125,26 @@ class RolesAndProfilesTest extends TestCase
         $professional = User::factory()->professional()->create();
 
         $this->get("/profiles/{$professional->id}")->assertOk();
+    }
+
+    public function test_public_professional_services_page_exposes_numeric_safe_service_data(): void
+    {
+        $professional = User::factory()->professional()->create();
+        $service = $professional->services()->create([
+            'title' => 'Electricidad domiciliaria',
+            'description' => 'Instalaciones y reparaciones eléctricas.',
+            'price' => 85000,
+            'category' => 'Electricidad',
+            'location' => 'Córdoba, Argentina',
+            'status' => 'active',
+        ]);
+
+        $this->get("/profiles/{$professional->id}/services")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Profiles/Services')
+                ->where('services.0.id', $service->id)
+                ->where('services.0.reviews_count', 0)
+                ->where('services.0.reviews_avg_rating', null));
     }
 }

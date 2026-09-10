@@ -1,24 +1,24 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { ProLinkFooter } from '@/components/prolink-footer';
+import { ProLinkHeader } from '@/components/prolink-header';
 import { Head, Link } from '@inertiajs/react';
-import { ChevronRight, Star } from 'lucide-react';
+import { ArrowLeft, BriefcaseBusiness, MapPin, Star } from 'lucide-react';
 
 interface Service {
     id: number;
     title: string;
     description: string;
-    price: number;
+    price: number | string;
     category: string;
-    average_rating: number;
-    reviews: any[];
+    location?: string | null;
+    average_rating?: number | null;
+    reviews_avg_rating?: number | string | null;
+    reviews_count: number;
 }
 
 interface User {
     id: number;
     name: string;
+    profile?: { full_name?: string | null; profession?: string | null };
 }
 
 interface Props {
@@ -26,73 +26,78 @@ interface Props {
     services: Service[];
 }
 
+const formatPrice = (price: number | string) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(price));
+
 export default function ProfilesServices({ user, services }: Props) {
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Inicio', href: '/' },
-        { title: user.name, href: `/profiles/${user.id}` },
-        { title: 'Servicios', href: `/profiles/${user.id}/services` },
-    ];
+    const displayName = user.profile?.full_name || user.name;
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Servicios de ${user.name}`} />
-
-            <div className="mx-auto max-w-4xl space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold">Servicios de {user.name}</h1>
+        <div className="flex min-h-screen flex-col bg-[#f8f7fc] text-slate-950">
+            <Head title={`Servicios de ${displayName}`} />
+            <ProLinkHeader />
+            <main className="prolink-page flex-1">
+                <Link href={`/profiles/${user.id}`} className="inline-flex items-center gap-2 font-bold text-blue-700 hover:text-blue-900">
+                    <ArrowLeft className="size-4" /> Volver al perfil
+                </Link>
+                <div className="mt-6">
+                    <p className="prolink-kicker">Catálogo profesional</p>
+                    <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Servicios de {displayName}</h1>
+                    <p className="mt-2 text-lg text-slate-700">
+                        {user.profile?.profession || 'Profesional de ProLink'} · {services.length}{' '}
+                        {services.length === 1 ? 'servicio disponible' : 'servicios disponibles'}
+                    </p>
                 </div>
 
                 {services.length === 0 ? (
-                    <Card className="p-12 text-center">
-                        <p className="text-gray-500">{user.name} aún no tiene servicios publicados</p>
-                    </Card>
+                    <section className="prolink-panel mt-8 flex min-h-72 flex-col items-center justify-center p-10 text-center">
+                        <span className="flex size-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                            <BriefcaseBusiness className="size-8" />
+                        </span>
+                        <h2 className="mt-5 text-2xl font-bold">Todavía no hay servicios publicados</h2>
+                        <p className="mt-2 text-slate-600">Volvé pronto para conocer las propuestas de este profesional.</p>
+                    </section>
                 ) : (
-                    <div className="grid gap-4">
-                        {services.map((service) => (
-                            <Link key={service.id} href={`/services/${service.id}`}>
-                                <Card className="cursor-pointer overflow-hidden transition-shadow hover:shadow-lg">
-                                    <div className="flex items-center justify-between p-6">
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-semibold">{service.title}</h3>
-                                            <Badge className="mt-2">{service.category}</Badge>
-                                            <p className="mt-2 line-clamp-2 text-gray-600">{service.description}</p>
-
-                                            <div className="mt-4 flex items-center justify-between">
-                                                <div className="text-2xl font-bold text-green-600">${service.price.toFixed(2)}</div>
-                                                {service.average_rating > 0 && (
-                                                    <div className="flex items-center gap-2">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <Star
-                                                                key={i}
-                                                                size={16}
-                                                                className={
-                                                                    i < Math.round(service.average_rating)
-                                                                        ? 'fill-yellow-400 text-yellow-400'
-                                                                        : 'text-gray-300'
-                                                                }
-                                                            />
-                                                        ))}
-                                                        <span className="text-xs text-gray-600">({service.reviews.length})</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="ml-4 text-gray-400" />
+                    <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                        {services.map((service) => {
+                            const rating = Number(service.reviews_avg_rating ?? service.average_rating ?? 0);
+                            return (
+                                <article
+                                    key={service.id}
+                                    className="prolink-panel flex min-h-72 flex-col p-6 transition hover:-translate-y-1 hover:shadow-lg"
+                                >
+                                    <div className="flex items-start justify-between gap-4">
+                                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-black tracking-wide text-blue-800 uppercase">
+                                            {service.category}
+                                        </span>
+                                        <span className="text-xl font-black text-blue-700">{formatPrice(service.price)}</span>
                                     </div>
-                                </Card>
-                            </Link>
-                        ))}
-                    </div>
+                                    <h2 className="mt-5 text-2xl font-bold">{service.title}</h2>
+                                    <p className="mt-3 line-clamp-3 leading-6 text-slate-600">{service.description}</p>
+                                    <div className="mt-auto pt-6">
+                                        <div className="mb-4 flex flex-wrap items-center gap-4 border-t border-slate-200 pt-4 text-sm font-semibold text-slate-600">
+                                            <span className="flex items-center gap-1.5">
+                                                <Star className="size-4 fill-amber-400 text-amber-500" /> {rating.toFixed(1)} ({service.reviews_count}
+                                                )
+                                            </span>
+                                            {service.location && (
+                                                <span className="flex min-w-0 items-center gap-1.5">
+                                                    <MapPin className="size-4 shrink-0 text-blue-700" />
+                                                    <span className="truncate">{service.location}</span>
+                                                </span>
+                                            )}
+                                        </div>
+                                        <Link href={`/services/${service.id}`} className="prolink-primary w-full">
+                                            Ver servicio
+                                        </Link>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </section>
                 )}
-
-                <div className="mt-6 flex gap-4">
-                    <a href={`/profiles/${user.id}`} className="flex-1">
-                        <Button variant="outline" className="w-full">
-                            Volver al Perfil
-                        </Button>
-                    </a>
-                </div>
-            </div>
-        </AppLayout>
+            </main>
+            <ProLinkFooter />
+        </div>
     );
 }

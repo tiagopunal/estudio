@@ -98,6 +98,7 @@ class ProfileController extends Controller
             'services' => $user->services()
                 ->where('status', 'active')
                 ->withCount('reviews')
+                ->withAvg('reviews', 'rating')
                 ->latest()
                 ->get(),
         ]);
