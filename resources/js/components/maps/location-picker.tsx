@@ -1,7 +1,7 @@
 import { explainGeolocationError } from '@/lib/geolocation';
 import L from 'leaflet';
 import { LocateFixed, MapPin, Search, X } from 'lucide-react';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 
 interface LocationPickerProps {
@@ -27,6 +27,9 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
     const [searching, setSearching] = useState(false);
     const [addressError, setAddressError] = useState('');
     const [results, setResults] = useState<AddressResult[]>([]);
+    const requestController = useRef<AbortController | null>(null);
+    const debounceTimer = useRef<number | null>(null);
+    const skipNextSearch = useRef(false);
     const hasPosition = Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude)) && latitude !== '' && longitude !== '';
     const position: [number, number] | null = hasPosition ? [Number(latitude), Number(longitude)] : null;
 
@@ -51,14 +54,10 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
         );
     };
 
-    const searchAddress = async (event: FormEvent) => {
-        event.preventDefault();
-        const query = address.trim();
-
-        if (query.length < 3) {
-            setAddressError('Escribí al menos 3 caracteres para buscar una dirección.');
-            return;
-        }
+    const requestAddresses = useCallback(async (query: string) => {
+        requestController.current?.abort();
+        const controller = new AbortController();
+        requestController.current = controller;
 
         setSearching(true);
         setAddressError('');
@@ -67,6 +66,7 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
         try {
             const response = await fetch(`/api/geocoding/search?q=${encodeURIComponent(query)}`, {
                 headers: { Accept: 'application/json' },
+                signal: controller.signal,
             });
             const payload = (await response.json()) as { data?: AddressResult[]; message?: string };
 
@@ -76,18 +76,54 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
             setResults(matches);
             if (!matches.length) setAddressError('No encontramos esa dirección en Argentina. Probá agregando ciudad y provincia.');
         } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') return;
             setAddressError(
                 error instanceof Error
                     ? `${error.message} Podés marcar el punto directamente en el mapa.`
                     : 'No pudimos consultar direcciones ahora. Podés marcar el punto directamente en el mapa.',
             );
         } finally {
-            setSearching(false);
+            if (!controller.signal.aborted) setSearching(false);
         }
+    }, []);
+
+    useEffect(() => {
+        if (skipNextSearch.current) {
+            skipNextSearch.current = false;
+            return;
+        }
+
+        const query = address.trim();
+        if (query.length < 3) {
+            requestController.current?.abort();
+            setSearching(false);
+            setResults([]);
+            setAddressError('');
+            return;
+        }
+
+        debounceTimer.current = window.setTimeout(() => void requestAddresses(query), 850);
+        return () => {
+            if (debounceTimer.current !== null) window.clearTimeout(debounceTimer.current);
+        };
+    }, [address, requestAddresses]);
+
+    useEffect(() => () => requestController.current?.abort(), []);
+
+    const searchAddress = (event: FormEvent) => {
+        event.preventDefault();
+        if (debounceTimer.current !== null) window.clearTimeout(debounceTimer.current);
+        const query = address.trim();
+        if (query.length < 3) {
+            setAddressError('Escribí al menos 3 caracteres para buscar una dirección.');
+            return;
+        }
+        void requestAddresses(query);
     };
 
     const chooseAddress = (result: AddressResult) => {
         onChange(Number(result.lat).toFixed(7), Number(result.lon).toFixed(7));
+        skipNextSearch.current = true;
         setAddress(result.display_name);
         onAddressChange?.(result.display_name.slice(0, 255));
         setResults([]);
@@ -139,14 +175,17 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
                         <input
                             id="map-address-search"
                             value={address}
-                            onChange={(event) => setAddress(event.target.value)}
+                            onChange={(event) => {
+                                setAddress(event.target.value);
+                                setAddressError('');
+                            }}
                             className="prolink-field w-full pl-10"
                             placeholder="Ej. Av. Colón 100, Córdoba"
-                            autoComplete="street-address"
+                            autoComplete="off"
                         />
                     </div>
                     <button type="submit" disabled={searching} className="prolink-primary disabled:cursor-wait disabled:opacity-60">
-                        {searching ? 'Buscando...' : 'Buscar dirección'}
+                        {searching ? 'Buscando sugerencias...' : 'Buscar ahora'}
                     </button>
                 </form>
                 {addressError && (
@@ -157,7 +196,7 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
                 {results.length > 0 && (
                     <div className="mt-2 overflow-hidden rounded-xl border border-blue-200 bg-white shadow-lg">
                         <p className="border-b border-blue-100 px-4 py-2 text-xs font-bold tracking-wide text-slate-500 uppercase">
-                            Elegí una coincidencia
+                            Sugerencias de direcciones
                         </p>
                         {results.map((result) => (
                             <button
@@ -171,7 +210,7 @@ export function LocationPicker({ latitude, longitude, onChange, onAddressChange,
                         ))}
                     </div>
                 )}
-                <p className="mt-2 text-xs text-slate-500">Búsqueda limitada a Argentina · Datos de OpenStreetMap</p>
+                <p className="mt-2 text-xs text-slate-500">Escribí al menos 3 caracteres · Búsqueda limitada a Argentina · Datos de OpenStreetMap</p>
             </div>
             <MapContainer center={position || argentinaCenter} zoom={position ? 14 : 4} className="h-80 w-full" scrollWheelZoom>
                 <TileLayer

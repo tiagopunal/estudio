@@ -20,20 +20,25 @@ class GeocodingController extends Controller
 
         try {
             $results = Cache::remember($cacheKey, now()->addDay(), function () use ($query) {
-                $response = Http::acceptJson()
+                $request = Http::acceptJson()
                     ->withHeaders([
                         'User-Agent' => config('services.geocoding.user_agent'),
                         'Accept-Language' => 'es-AR,es;q=0.9',
                     ])
                     ->connectTimeout(3)
-                    ->timeout(8)
-                    ->get(config('services.geocoding.search_url'), [
-                        'q' => $query,
-                        'format' => 'jsonv2',
-                        'addressdetails' => 1,
-                        'limit' => 5,
-                        'countrycodes' => 'ar',
-                    ])
+                    ->timeout(8);
+
+                if ($caBundle = config('services.geocoding.ca_bundle')) {
+                    $request->withOptions(['verify' => $caBundle]);
+                }
+
+                $response = $request->get(config('services.geocoding.search_url'), [
+                    'q' => $query,
+                    'format' => 'jsonv2',
+                    'addressdetails' => 1,
+                    'limit' => 5,
+                    'countrycodes' => 'ar',
+                ])
                     ->throw();
 
                 return collect($response->json())
