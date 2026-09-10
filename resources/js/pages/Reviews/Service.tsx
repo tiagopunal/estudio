@@ -43,8 +43,8 @@ export default function ServicePage({ service, reviews, average_rating, currentB
                             )}
                         </div>
                         <div className="flex items-center gap-3 rounded-full bg-slate-50 px-4 py-2 text-sm text-slate-700">
-                            <span className="font-semibold">{average_rating?.toFixed(1) ?? '0.0'}</span>
-                            <RatingStars rating={average_rating ?? 0} readOnly showValue={false} size="sm" />
+                            <span className="font-semibold">{Number(average_rating || 0).toFixed(1)}</span>
+                            <RatingStars rating={Number(average_rating || 0)} readOnly showValue={false} size="sm" />
                         </div>
                     </div>
                 </div>

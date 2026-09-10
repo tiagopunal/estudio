@@ -46,8 +46,6 @@ export default function ServiceReviewsPage({ service, currentUser, currentBookin
         !reviews.some((r) => r.booking_id === currentBooking.id) &&
         authToken;
 
-    const userReview = currentUser ? reviews.find((r) => r.user_id === currentUser.id) : null;
-
     // Manejar envío de formulario
     const handleSubmitReview = async (data: { rating: number; comment: string }) => {
         if (!authToken || !currentBooking) return;

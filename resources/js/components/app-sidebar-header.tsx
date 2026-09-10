@@ -3,6 +3,7 @@ import { type BreadcrumbItem as BreadcrumbItemType, type SharedData } from '@/ty
 import { Link, usePage } from '@inertiajs/react';
 
 export function AppSidebarHeader({ breadcrumbs: _breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
+    void _breadcrumbs;
     const { auth } = usePage<SharedData>().props;
     const user = auth.user!;
     const links = [

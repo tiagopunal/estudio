@@ -55,7 +55,7 @@ export default function ReviewList({
                 <ReviewCard
                     key={review.id}
                     review={review}
-                    currentUser={currentUserId ? ({ id: currentUserId } as any) : undefined}
+                    currentUser={currentUserId ? { id: currentUserId } : undefined}
                     onEdit={onEditReview}
                     onDelete={onDeleteReview}
                 />

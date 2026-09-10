@@ -18,6 +18,7 @@ interface ReviewsListResponse {
 }
 
 export function useReviews(options: UseReviewsOptions = {}) {
+    void options;
     const [reviews, setReviews] = useState<Review[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

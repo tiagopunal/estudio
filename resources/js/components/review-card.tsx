@@ -8,7 +8,7 @@ import RatingStars from './rating-stars';
 
 interface ReviewCardProps {
     review: Review;
-    currentUser?: User;
+    currentUser?: Pick<User, 'id'>;
     onEdit?: (review: Review) => void;
     onDelete?: (reviewId: number) => void;
 }

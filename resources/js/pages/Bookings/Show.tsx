@@ -14,7 +14,7 @@ interface Booking {
         id: number;
         title: string;
         description: string;
-        price: number;
+        price: number | string;
         category: string;
         location?: string | null;
         latitude?: number | string | null;
@@ -134,7 +134,12 @@ export default function BookingsShow({ booking, canManageStatus, canCancel }: Pr
                                     {booking.service.category}
                                 </p>
                                 <p className="inline-flex items-center gap-2">
-                                    <Clock3 className="h-4 w-4" />${booking.service.price.toFixed(2)}
+                                    <Clock3 className="h-4 w-4" />
+                                    {new Intl.NumberFormat('es-AR', {
+                                        style: 'currency',
+                                        currency: 'ARS',
+                                        maximumFractionDigits: 0,
+                                    }).format(Number(booking.service.price))}
                                 </p>
                                 <p className="inline-flex items-center gap-2">
                                     <UserRound className="h-4 w-4" />

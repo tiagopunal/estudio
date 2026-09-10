@@ -16,6 +16,7 @@ interface ReviewFormProps {
 }
 
 export default function ReviewForm({ bookingId, onSubmit, isLoading = false, error, existingReview, onCancel }: ReviewFormProps) {
+    void bookingId;
     const [rating, setRating] = useState(existingReview?.rating || 0);
     const [comment, setComment] = useState(existingReview?.comment || '');
     const [submitError, setSubmitError] = useState<string | null>(error || null);
