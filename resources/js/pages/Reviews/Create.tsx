@@ -39,7 +39,7 @@ export default function Create({ bookings = [], booking, selectedServiceId }: Cr
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'Reseñas', href: '/reviews' },
+                ...(booking?.service ? [{ title: booking.service.title, href: route('services.show', booking.service.id) }] : []),
                 { title: 'Crear', href: booking ? `/bookings/${booking.id}/reviews/create` : '/reviews/create' },
             ]}
         >
@@ -52,10 +52,10 @@ export default function Create({ bookings = [], booking, selectedServiceId }: Cr
                         <p className="text-sm text-gray-500">Selecciona una reserva completada y califica tu experiencia.</p>
                     </div>
                     <Link
-                        href={route('reviews.index')}
+                        href={booking?.service ? route('services.show', booking.service.id) : route('bookings.index')}
                         className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                     >
-                        Volver a reseñas
+                        Volver al servicio
                     </Link>
                 </div>
 

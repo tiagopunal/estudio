@@ -2,7 +2,7 @@ import { ServiceMap } from '@/components/maps/service-map';
 import { ProLinkFooter } from '@/components/prolink-footer';
 import { ProLinkHeader } from '@/components/prolink-header';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { BriefcaseBusiness, Edit3, MapPin, Star, Trash2, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, Edit3, MapPin, MessageSquarePlus, Star, Trash2, UserRound } from 'lucide-react';
 import { useState } from 'react';
 interface Review {
     id: number;
@@ -27,8 +27,9 @@ interface Service {
 interface Props {
     service: Service;
     isOwner: boolean;
+    reviewableBookingId?: number | null;
 }
-export default function ServicesShow({ service, isOwner }: Props) {
+export default function ServicesShow({ service, isOwner, reviewableBookingId }: Props) {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const { delete: destroy, processing } = useForm();
     const remove = () => destroy(`/services/${service.id}`, { onFinish: () => setDeleteOpen(false) });
@@ -52,12 +53,20 @@ export default function ServicesShow({ service, isOwner }: Props) {
                         <h1 className="prolink-title mt-2">{service.title}</h1>
                         <p className="mt-6 text-lg leading-8 whitespace-pre-line text-slate-700">{service.description}</p>
                         <section className="prolink-panel mt-8 p-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-bold">Reseñas de clientes</h2>
-                                <span className="flex items-center gap-2 font-bold">
-                                    <Star className="fill-amber-400 text-amber-400" />
-                                    {Number(service.average_rating || 0).toFixed(1)} ({service.reviews.length})
-                                </span>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold">Reseñas de este servicio</h2>
+                                    <span className="mt-1 flex items-center gap-2 font-bold text-slate-700">
+                                        <Star className="fill-amber-400 text-amber-400" />
+                                        {Number(service.average_rating || 0).toFixed(1)} ({service.reviews.length})
+                                    </span>
+                                </div>
+                                {reviewableBookingId && (
+                                    <Link href={route('bookings.reviews.create', reviewableBookingId)} className="prolink-primary shrink-0">
+                                        <MessageSquarePlus className="size-5" />
+                                        Reseñar servicio recibido
+                                    </Link>
+                                )}
                             </div>
                             {service.reviews.length ? (
                                 <div className="mt-5 space-y-4">
@@ -72,7 +81,9 @@ export default function ServicesShow({ service, isOwner }: Props) {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="mt-5 text-slate-600">Este servicio todavía no tiene reseñas.</p>
+                                <p className="mt-5 text-slate-600">
+                                    Este servicio todavía no tiene reseñas. Solo pueden opinar quienes hayan completado una reserva.
+                                </p>
                             )}
                         </section>
                     </div>

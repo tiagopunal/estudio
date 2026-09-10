@@ -3,9 +3,12 @@
 namespace Tests\Feature\Services;
 
 use App\Enums\Role;
+use App\Models\Booking;
+use App\Models\Review;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ServiceCrudTest extends TestCase
@@ -103,6 +106,38 @@ class ServiceCrudTest extends TestCase
         $this->get("/services/{$service->id}")->assertNotFound();
         $this->actingAs(User::factory()->create())->get("/services/{$service->id}")->assertNotFound();
         $this->actingAs($owner)->get("/services/{$service->id}")->assertOk();
+    }
+
+    public function test_service_detail_only_offers_a_review_for_an_unreviewed_completed_booking(): void
+    {
+        $customer = User::factory()->create();
+        $service = $this->createService(User::factory()->professional()->create());
+        $pending = Booking::create([
+            'user_id' => $customer->id,
+            'service_id' => $service->id,
+            'date' => now()->addDay(),
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('services.show', $service))
+            ->assertInertia(fn (Assert $page) => $page->where('reviewableBookingId', null));
+
+        $pending->update(['status' => 'completed']);
+
+        $this->get(route('services.show', $service))
+            ->assertInertia(fn (Assert $page) => $page->where('reviewableBookingId', $pending->id));
+
+        Review::create([
+            'user_id' => $customer->id,
+            'service_id' => $service->id,
+            'booking_id' => $pending->id,
+            'rating' => 5,
+            'comment' => 'Excelente servicio.',
+        ]);
+
+        $this->get(route('services.show', $service))
+            ->assertInertia(fn (Assert $page) => $page->where('reviewableBookingId', null));
     }
 
     /**

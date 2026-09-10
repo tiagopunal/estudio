@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, BriefcaseBusiness, CalendarDays, Compass, Plus, ShieldCheck, Star, UserRound } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, CalendarDays, Compass, Plus, ShieldCheck, UserRound } from 'lucide-react';
 
 export default function Dashboard() {
     const { auth } = usePage<SharedData>().props;
@@ -20,7 +20,6 @@ export default function Dashboard() {
             href: route('bookings.index'),
             icon: CalendarDays,
         },
-        { title: 'Reseñas', text: 'Gestioná las experiencias que compartiste en ProLink.', href: route('reviews.index'), icon: Star },
         {
             title: professional ? 'Mis servicios' : 'Mi perfil',
             text: professional ? 'Administrá tu catálogo profesional.' : 'Completá tus datos y prepará tu perfil.',
@@ -45,7 +44,7 @@ export default function Dashboard() {
                         </Link>
                     </Button>
                 </section>
-                <section className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                <section className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     {actions.map(({ title, text, href, icon: Icon }) => (
                         <Link href={href} key={title} className="prolink-panel group p-6 transition hover:-translate-y-1 hover:border-blue-300">
                             <span className="text-primary flex size-12 items-center justify-center rounded-xl bg-blue-50">

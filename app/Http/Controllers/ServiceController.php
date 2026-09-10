@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SaveServiceRequest;
+use App\Models\Booking;
+use App\Models\Review;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -88,11 +90,22 @@ class ServiceController extends Controller
             abort(404);
         }
 
-        $service->load('user.profile', 'reviews.user', 'bookings');
+        $service->load(['user.profile', 'reviews.user' => fn ($query) => $query->latest()]);
+
+        $reviewableBooking = auth()->check()
+            ? Booking::query()
+                ->where('user_id', auth()->id())
+                ->where('service_id', $service->id)
+                ->where('status', 'completed')
+                ->whereNotIn('id', Review::query()->select('booking_id'))
+                ->latest('date')
+                ->first()
+            : null;
 
         return Inertia::render('Services/Show', [
             'service' => $service,
             'isOwner' => $service->user_id === auth()->id(),
+            'reviewableBookingId' => $reviewableBooking?->id,
         ]);
     }
 

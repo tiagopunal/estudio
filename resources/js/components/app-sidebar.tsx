@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { CalendarDays, Compass, HelpCircle, House, LogOut, Settings, Star, UserRound } from 'lucide-react';
+import { CalendarDays, Compass, HelpCircle, House, LogOut, Settings, UserRound } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -12,7 +12,6 @@ export function AppSidebar() {
         { title: 'Inicio', url: '/', icon: House },
         { title: 'Explorar servicios', url: '/services/browse', icon: Compass },
         { title: 'Mis reservas', url: '/bookings', icon: CalendarDays },
-        { title: 'Reseñas', url: '/reviews', icon: Star },
         { title: 'Mi perfil', url: '/my-profile', icon: UserRound },
     ];
     return (

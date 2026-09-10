@@ -1,6 +1,6 @@
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
-import { CalendarDays, Compass, House, LogOut, Settings, Star, UserRound, X } from 'lucide-react';
+import { CalendarDays, Compass, House, LogOut, Settings, UserRound, X } from 'lucide-react';
 import { useState } from 'react';
 
 export function AccountDrawer({ user }: { user: User }) {
@@ -10,7 +10,6 @@ export function AccountDrawer({ user }: { user: User }) {
         { label: 'Dashboard', href: route('dashboard'), icon: House },
         { label: 'Explorar servicios', href: route('services.browse'), icon: Compass },
         { label: 'Mis reservas', href: route('bookings.index'), icon: CalendarDays },
-        { label: 'Reseñas', href: route('reviews.index'), icon: Star },
         { label: 'Mi perfil', href: route('marketplace-profile.edit'), icon: UserRound },
     ];
     const close = () => setOpen(false);

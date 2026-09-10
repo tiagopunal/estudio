@@ -70,6 +70,7 @@ class ReviewController extends Controller
 
         return Inertia::render('Reviews/Create', [
             'bookings' => $bookings,
+            'booking' => $booking?->loadMissing('service'),
             'selectedServiceId' => $selectedServiceId,
         ]);
     }
@@ -101,7 +102,7 @@ class ReviewController extends Controller
 
         $this->updateServiceAverageRating($booking->service_id);
 
-        return redirect()->route('reviews.show', $review)
+        return redirect()->route('services.show', $review->service_id)
             ->with('success', 'Reseña creada correctamente');
     }
 
@@ -132,7 +133,7 @@ class ReviewController extends Controller
         $review->update($request->validated());
         $this->updateServiceAverageRating($review->service_id);
 
-        return redirect()->route('reviews.show', $review)
+        return redirect()->route('services.show', $review->service_id)
             ->with('success', 'Reseña actualizada correctamente');
     }
 
