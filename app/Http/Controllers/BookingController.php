@@ -20,7 +20,7 @@ class BookingController extends Controller
                 $query->where('user_id', auth()->id())
                     ->orWhereHas('service', fn ($serviceQuery) => $serviceQuery->where('user_id', auth()->id()));
             })
-            ->with(['service.user', 'user'])
+            ->with(['service.user', 'user', 'review'])
             ->latest()
             ->get();
 
@@ -106,13 +106,16 @@ class BookingController extends Controller
     {
         $this->authorize('view', $booking);
 
-        $booking->load(['service.user', 'user']);
+        $booking->load(['service.user', 'user', 'review']);
         $user = auth()->user();
 
         return Inertia::render('Bookings/Show', [
             'booking' => $booking,
             'canManageStatus' => $user->isProfessional() && $user->id === $booking->service->user_id,
             'isReceivedBooking' => $user->id === $booking->service->user_id && $user->id !== $booking->user_id,
+            'canReview' => $user->id === $booking->user_id
+                && $booking->status === 'completed'
+                && $booking->review === null,
             'canCancelPending' => ($user->id === $booking->user_id)
                 || ($user->isProfessional() && $user->id === $booking->service->user_id),
             'canCustomerCancelConfirmed' => $user->id === $booking->user_id

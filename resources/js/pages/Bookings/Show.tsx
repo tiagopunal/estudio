@@ -29,12 +29,14 @@ interface Booking {
         name: string;
         email: string;
     };
+    review?: { id: number } | null;
 }
 
 interface Props {
     booking: Booking;
     canManageStatus: boolean;
     isReceivedBooking: boolean;
+    canReview: boolean;
     canCancelPending: boolean;
     canCustomerCancelConfirmed: boolean;
 }
@@ -70,7 +72,7 @@ function formatBookingDate(value: string) {
     return parsed.toLocaleString();
 }
 
-export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canCancelPending, canCustomerCancelConfirmed }: Props) {
+export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canReview, canCancelPending, canCustomerCancelConfirmed }: Props) {
     const { data, setData, patch, processing, errors } = useForm({
         status: booking.status,
     });
@@ -113,7 +115,9 @@ export default function BookingsShow({ booking, canManageStatus, isReceivedBooki
                             <p className="prolink-subtitle">
                                 {isReceivedBooking && booking.status === 'pending'
                                     ? `${booking.user.name} está esperando que aceptes o rechaces esta solicitud.`
-                                    : statusSubtitles[booking.status]}
+                                    : booking.status === 'completed' && !isReceivedBooking
+                                      ? 'El profesional marcó el trabajo como finalizado. Ya podés dejar tu reseña.'
+                                      : statusSubtitles[booking.status]}
                             </p>
                         </div>
                         <Link href={route('bookings.index')} className="prolink-secondary self-start sm:self-auto">
@@ -244,10 +248,22 @@ export default function BookingsShow({ booking, canManageStatus, isReceivedBooki
                                     </p>
                                 )}
 
-                                {booking.status === 'completed' && !canManageStatus && (
+                                {booking.status === 'completed' && canReview && (
                                     <Link href={`/bookings/${booking.id}/reviews/create`} className="prolink-primary mt-6 w-full">
-                                        Dejar reseña
+                                        Reseñar trabajo finalizado
                                     </Link>
+                                )}
+
+                                {booking.status === 'completed' && !canManageStatus && !canReview && booking.review && (
+                                    <p className="mt-6 rounded-xl bg-emerald-50 p-4 text-center text-sm font-bold text-emerald-800">
+                                        Trabajo finalizado · Reseña enviada
+                                    </p>
+                                )}
+
+                                {booking.status === 'completed' && canManageStatus && (
+                                    <p className="mt-6 rounded-xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
+                                        Marcaste este trabajo como finalizado. El cliente ya puede reseñar el servicio.
+                                    </p>
                                 )}
 
                                 <Link href={route('bookings.create')} className="prolink-secondary mt-3 w-full">

@@ -10,6 +10,7 @@ interface Booking {
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
     service: { id: number; title: string; price: number; user: { id: number; name: string } };
     user: { id: number; name: string; email: string };
+    review?: { id: number } | null;
 }
 const labels = { pending: 'Pendiente', confirmed: 'Confirmada', completed: 'Completada', cancelled: 'Cancelada' };
 const colors = {
@@ -167,6 +168,16 @@ export default function BookingsIndex({ bookings }: { bookings: Booking[] }) {
                                                 </button>
                                             </div>
                                         ) : null}
+                                        {section === 'made' && booking.status === 'completed' && !booking.review && (
+                                            <Link href={route('bookings.reviews.create', booking.id)} className="prolink-primary mt-5 w-full">
+                                                Reseñar trabajo finalizado
+                                            </Link>
+                                        )}
+                                        {section === 'made' && booking.status === 'completed' && booking.review && (
+                                            <p className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-bold text-emerald-800">
+                                                Trabajo finalizado · Reseña enviada
+                                            </p>
+                                        )}
                                         <Link href={route('bookings.show', booking.id)} className={`${section === 'received' && booking.status === 'pending' ? 'prolink-secondary' : 'prolink-primary'} mt-3 w-full`}>
                                             Ver detalles
                                         </Link>

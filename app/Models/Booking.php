@@ -10,7 +10,7 @@ class Booking extends Model
         'user_id',
         'service_id',
         'date',
-        'status'
+        'status',
     ];
 
     // 🔥 reserva pertenece a usuario
@@ -24,4 +24,9 @@ class Booking extends Model
     {
         return $this->belongsTo(Service::class);
     }
-} 
+
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+}

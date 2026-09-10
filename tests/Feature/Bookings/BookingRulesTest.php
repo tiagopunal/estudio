@@ -60,6 +60,28 @@ class BookingRulesTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('bookings.0.id', $booking->id)
                 ->where('bookings.0.status', 'confirmed'));
+
+        $this->actingAs($professional)
+            ->patch("/bookings/{$booking->id}/status", ['status' => 'completed'])
+            ->assertRedirect(route('bookings.show', $booking));
+
+        $this->actingAs($customer)
+            ->get(route('bookings.show', $booking))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('booking.status', 'completed')
+                ->where('canReview', true));
+
+        $this->post('/reviews', [
+            'booking_id' => $booking->id,
+            'rating' => 5,
+            'comment' => 'Trabajo terminado correctamente.',
+        ])->assertRedirect(route('services.show', $service));
+
+        $this->get(route('bookings.show', $booking))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('booking.status', 'completed')
+                ->where('canReview', false)
+                ->where('booking.review.rating', 5));
     }
 
     public function test_a_paused_service_cannot_be_booked(): void
