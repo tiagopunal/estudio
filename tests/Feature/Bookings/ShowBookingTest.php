@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ShowBookingTest extends TestCase
@@ -23,6 +24,7 @@ class ShowBookingTest extends TestCase
             'description' => 'Servicio de prueba para reservas',
             'price' => 25000,
             'category' => 'Belleza',
+            'location' => 'Centro, Córdoba',
             'latitude' => -33.45,
             'longitude' => -70.66,
             'average_rating' => 4.8,
@@ -39,6 +41,11 @@ class ShowBookingTest extends TestCase
 
         $response = $this->get("/bookings/{$booking->id}");
 
-        $response->assertStatus(200);
+        $response->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Bookings/Show')
+                ->where('booking.service.location', 'Centro, Córdoba')
+                ->where('booking.service.latitude', '-33.4500000')
+                ->where('booking.service.longitude', '-70.6600000'));
     }
 }

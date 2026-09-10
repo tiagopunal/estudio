@@ -1,3 +1,4 @@
+import { ServiceMap } from '@/components/maps/service-map';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -15,6 +16,9 @@ interface Booking {
         description: string;
         price: number;
         category: string;
+        location?: string | null;
+        latitude?: number | string | null;
+        longitude?: number | string | null;
         user: {
             id: number;
             name: string;
@@ -78,6 +82,7 @@ export default function BookingsShow({ booking, canManageStatus, canCancel }: Pr
     };
 
     const canChangeStatus = booking.status === 'pending' || booking.status === 'confirmed';
+    const hasServiceLocation = booking.service.latitude != null && booking.service.longitude != null;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -137,7 +142,7 @@ export default function BookingsShow({ booking, canManageStatus, canCancel }: Pr
                                 </p>
                                 <p className="inline-flex items-center gap-2">
                                     <MapPin className="h-4 w-4" />
-                                    Servicio #{booking.service.id}
+                                    {booking.service.location || (hasServiceLocation ? 'Ubicación registrada' : 'Zona a coordinar')}
                                 </p>
                             </div>
                         </div>
@@ -275,6 +280,38 @@ export default function BookingsShow({ booking, canManageStatus, canCancel }: Pr
                         </div>
                     </div>
                 </div>
+
+                {hasServiceLocation && (
+                    <section className="rounded-[24px] border border-slate-200/70 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-900">
+                        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <p className="text-sm tracking-[0.2em] text-blue-700 uppercase">Ubicación del servicio</p>
+                                <h2 className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">Cómo llegar a tu reserva</h2>
+                                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                                    {booking.service.location || 'Consultá con el profesional para confirmar la dirección exacta.'}
+                                </p>
+                            </div>
+                            <Link href={route('services.show', booking.service.id)} className="text-sm font-bold text-blue-700">
+                                Ver servicio completo
+                            </Link>
+                        </div>
+                        <ServiceMap
+                            className="h-80"
+                            services={[
+                                {
+                                    id: booking.service.id,
+                                    title: booking.service.title,
+                                    category: booking.service.category,
+                                    price: booking.service.price,
+                                    location: booking.service.location,
+                                    latitude: booking.service.latitude!,
+                                    longitude: booking.service.longitude!,
+                                    user: { name: booking.service.user.name },
+                                },
+                            ]}
+                        />
+                    </section>
+                )}
             </div>
         </AppLayout>
     );

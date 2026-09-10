@@ -17,6 +17,7 @@ La plataforma usa Leaflet, React Leaflet y las teselas de OpenStreetMap. No requ
 - Búsqueda manual de direcciones limitada a Argentina.
 - La dirección elegida completa automáticamente el campo `Ciudad o zona`.
 - Mapas en el detalle del servicio y en el perfil público.
+- Mapa de la ubicación contratada dentro del detalle privado de cada reserva.
 - Los servicios sin coordenadas siguen disponibles en la lista, pero no aparecen en el mapa.
 
 ## Instalación
