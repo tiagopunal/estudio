@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('users', 'role')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->string('role')->default(Role::CLIENT)->after('password');
         });
@@ -22,8 +26,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        // La migración 2026_08_21 mantiene `role` como parte del esquema actual.
+        // No debe eliminarse al revertir esta migración histórica redundante.
     }
 };
