@@ -281,12 +281,24 @@ class BookingRulesTest extends TestCase
 
     private function booking(User $customer, Service $service, string $status = 'pending', mixed $date = null): Booking
     {
-        return Booking::create([
+        $booking = Booking::create([
             'user_id' => $customer->id,
             'service_id' => $service->id,
             'date' => $date ?? now()->addDays(4),
             'status' => $status,
         ]);
+
+        $booking->payment()->create([
+            'customer_id' => $customer->id,
+            'service_price' => '100.00',
+            'amount' => '100.00',
+            'currency' => 'ARS',
+            'status' => 'held',
+            'held_at' => now(),
+            'release_at' => now()->addDays(60),
+        ]);
+
+        return $booking;
     }
 
     private function payload(Service $service): array

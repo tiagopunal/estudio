@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Service;
+use App\Models\Payment;
 use App\Policies\BookingPolicy;
 use App\Policies\ReviewPolicy;
 use App\Policies\ServicePolicy;
+use App\Policies\PaymentPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
@@ -48,5 +50,6 @@ class AppServiceProvider extends ServiceProvider
         \Gate::policy(Booking::class, BookingPolicy::class);
         \Gate::policy(Service::class, ServicePolicy::class);
         \Gate::policy(Review::class, ReviewPolicy::class);
+        \Gate::policy(Payment::class, PaymentPolicy::class);
     }
 }

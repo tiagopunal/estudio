@@ -31,6 +31,7 @@ class StoreBookingRequest extends FormRequest
         return [
             'service_id' => 'required|exists:services,id',
             'date' => 'required|date_format:Y-m-d H:i|after:now',
+            'amount' => 'nullable|numeric|min:0.01|decimal:0,2',
         ];
     }
 
@@ -45,6 +46,8 @@ class StoreBookingRequest extends FormRequest
             'date.required' => 'La fecha es obligatoria',
             'date.date_format' => 'La fecha debe estar en formato YYYY-MM-DD HH:MM',
             'date.after' => 'La fecha debe ser posterior a la actual',
+            'amount.numeric' => 'El importe debe ser numérico',
+            'amount.decimal' => 'El importe debe tener hasta dos decimales',
         ];
     }
 }

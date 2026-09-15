@@ -27,6 +27,7 @@ export default function BookingsCreate({ services }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         service_id: services[0]?.id?.toString() ?? '',
         date: '',
+        amount: services[0] ? (Number(services[0].price) * 0.1).toFixed(2) : '',
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -36,6 +37,8 @@ export default function BookingsCreate({ services }: Props) {
     ];
 
     const selectedService = services.find((service) => service.id === Number(data.service_id));
+    const servicePrice = selectedService ? Number(selectedService.price) : 0;
+    const minimumAmount = servicePrice * 0.1;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -66,7 +69,15 @@ export default function BookingsCreate({ services }: Props) {
                                     <select
                                         id="service_id"
                                         value={data.service_id}
-                                        onChange={(e) => setData('service_id', e.target.value)}
+                                        onChange={(e) => {
+                                            const serviceId = e.target.value;
+                                            const service = services.find((item) => item.id === Number(serviceId));
+                                            setData((current) => ({
+                                                ...current,
+                                                service_id: serviceId,
+                                                amount: service ? (Number(service.price) * 0.1).toFixed(2) : '',
+                                            }));
+                                        }}
                                         className="mt-2 min-h-12 w-full rounded-lg border border-slate-300 !bg-white px-4 py-3 text-sm !text-slate-900 transition outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
                                     >
                                         <option value="">Selecciona un servicio...</option>
@@ -88,6 +99,26 @@ export default function BookingsCreate({ services }: Props) {
                                             {errors.service_id}
                                         </div>
                                     )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="amount" className="font-bold text-slate-900">
+                                        Importe a abonar (ARS)
+                                    </Label>
+                                    <Input
+                                        id="amount"
+                                        type="number"
+                                        min={minimumAmount.toFixed(2)}
+                                        max={servicePrice.toFixed(2)}
+                                        step="0.01"
+                                        value={data.amount}
+                                        onChange={(e) => setData('amount', e.target.value)}
+                                        className="mt-2 !min-h-12 rounded-lg border border-slate-300 !bg-white px-4 !text-slate-900 focus:border-blue-600 focus:ring-blue-600/20"
+                                    />
+                                    <p className="mt-2 text-sm text-slate-600">
+                                        Mínimo {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(minimumAmount)}. Podés abonar hasta el total del servicio.
+                                    </p>
+                                    {errors.amount && <p className="mt-2 text-sm text-red-600">{errors.amount}</p>}
                                 </div>
 
                                 <div>
@@ -134,6 +165,9 @@ export default function BookingsCreate({ services }: Props) {
                                                 currency: 'ARS',
                                                 maximumFractionDigits: 0,
                                             }).format(Number(selectedService.price))}
+                                        </p>
+                                        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+                                            Pago simulado: el monto se registra como retenido en custodia dentro del sistema académico. No se procesa dinero real.
                                         </p>
                                         <div className="mt-6 space-y-4 border-t border-slate-200 pt-5 text-sm text-slate-700">
                                             <p className="flex items-center gap-2 font-bold">

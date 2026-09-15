@@ -31,6 +31,12 @@ interface Booking {
         email: string;
     };
     review?: { id: number } | null;
+    payment?: {
+        amount: number | string;
+        service_price: number | string;
+        currency: string;
+        status: 'pending' | 'held' | 'released' | 'refunded';
+    } | null;
 }
 
 interface Props {
@@ -40,6 +46,8 @@ interface Props {
     canReview: boolean;
     canCancelPending: boolean;
     canCustomerCancelConfirmed: boolean;
+    canApprovePayment: boolean;
+    canReleasePayment: boolean;
 }
 
 const statusColors = {
@@ -73,7 +81,7 @@ function formatBookingDate(value: string) {
     return parsed.toLocaleString();
 }
 
-export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canReview, canCancelPending, canCustomerCancelConfirmed }: Props) {
+export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canReview, canCancelPending, canCustomerCancelConfirmed, canApprovePayment, canReleasePayment }: Props) {
     const [processing, setProcessing] = useState(false);
     const errors = usePage().props.errors as { status?: string };
 
@@ -190,6 +198,24 @@ export default function BookingsShow({ booking, canManageStatus, isReceivedBooki
                             <div className="prolink-panel p-6">
                                 <p className="text-sm font-bold text-slate-500 uppercase">Acciones de la reserva</p>
                                 <p className="mt-2 text-sm leading-6 text-slate-600">Gestioná el siguiente paso según el estado actual.</p>
+
+                                {booking.payment && (
+                                    <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+                                        <p className="font-bold">Pago simulado · {currency.format(Number(booking.payment.amount))}</p>
+                                        <p className="mt-1 leading-6">Estado: {booking.payment.status === 'pending' ? 'Pendiente de aprobación' : booking.payment.status === 'held' ? 'Retenido en custodia' : booking.payment.status === 'released' ? 'Liberado' : 'Reembolsado'}</p>
+                                        <p className="mt-2 leading-6">No se procesa dinero real.</p>
+                                        {canApprovePayment && (
+                                            <Button onClick={() => router.post(route('bookings.payment.approve', booking.id), {}, { preserveScroll: true })} className="prolink-primary mt-4 w-full">
+                                                Aprobar pago simulado
+                                            </Button>
+                                        )}
+                                        {canReleasePayment && (
+                                            <Button onClick={() => router.post(route('bookings.payment.release', booking.id), {}, { preserveScroll: true })} className="prolink-primary mt-4 w-full">
+                                                Confirmar trabajo y liberar pago
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
 
                                 {canChangeStatus && (
                                     <div className="mt-6 space-y-3">

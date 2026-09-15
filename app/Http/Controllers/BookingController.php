@@ -6,6 +6,7 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Models\Booking;
 use App\Models\Service;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -77,19 +78,40 @@ class BookingController extends Controller
                 ->withInput();
         }
 
-        $booking = DB::transaction(function () use ($request, $user, $service) {
+            $servicePrice = Payment::amountToCents($service->price);
+            $amount = $request->filled('amount') ? Payment::amountToCents($request->amount) : $servicePrice;
+            $minimum = (int) ceil($servicePrice * 0.10);
+
+            if ($amount < $minimum || $amount > $servicePrice) {
+                return back()
+                ->withErrors(['amount' => 'El importe debe estar entre el 10% y el 100% del precio del servicio.'])
+                ->withInput();
+            }
+
+        $booking = DB::transaction(function () use ($request, $user, $service, $servicePrice, $amount) {
             Service::query()->whereKey($service->id)->lockForUpdate()->firstOrFail();
 
             if ($this->hasScheduleConflict($service->id, $request->date)) {
                 return null;
             }
 
-            return Booking::create([
+            $booking = Booking::create([
                 'user_id' => $user->id,
                 'service_id' => $service->id,
                 'date' => $request->date,
                 'status' => 'pending',
             ]);
+
+            $booking->payment()->create([
+                'customer_id' => $user->id,
+                'service_price' => number_format($servicePrice / 100, 2, '.', ''),
+                'amount' => number_format($amount / 100, 2, '.', ''),
+                'currency' => 'ARS',
+                'status' => 'pending',
+                'release_at' => Carbon::parse($request->date)->addDays(60),
+            ]);
+
+            return $booking;
         });
 
         if (! $booking) {
@@ -106,7 +128,8 @@ class BookingController extends Controller
     {
         $this->authorize('view', $booking);
 
-        $booking->load(['service.user', 'user', 'review']);
+        $booking->load(['service.user', 'user', 'review', 'payment']);
+        $this->releasePaymentIfDue($booking);
         $user = auth()->user();
 
         return Inertia::render('Bookings/Show', [
@@ -120,6 +143,10 @@ class BookingController extends Controller
                 || ($user->isProfessional() && $user->id === $booking->service->user_id),
             'canCustomerCancelConfirmed' => $user->id === $booking->user_id
                 && $this->canCustomerCancelConfirmedBooking($booking),
+            'canApprovePayment' => $user->id === $booking->user_id && $booking->payment?->status === 'pending',
+            'canReleasePayment' => $user->id === $booking->user_id
+                && $booking->status === 'completed'
+                && $booking->payment?->status === 'held',
         ]);
     }
 
@@ -149,6 +176,10 @@ class BookingController extends Controller
             return back()->withErrors(['status' => 'Solo el profesional dueño del servicio puede confirmar reservas']);
         }
 
+        if ($currentStatus === 'pending' && $newStatus === 'confirmed' && $booking->payment?->status !== 'held') {
+            return back()->withErrors(['status' => 'El profesional solo puede confirmar una reserva con el pago simulado retenido.']);
+        }
+
         if ($currentStatus === 'pending' && $newStatus === 'cancelled' && ! $isCustomer && ! $isProvider) {
             return back()->withErrors(['status' => 'No tienes permisos para rechazar esta reserva']);
         }
@@ -167,7 +198,14 @@ class BookingController extends Controller
             }
         }
 
-        $booking->update(['status' => $newStatus]);
+        DB::transaction(function () use ($booking, $newStatus): void {
+            $booking->update(['status' => $newStatus]);
+
+            if ($newStatus === 'cancelled') {
+                $payment = $booking->payment()->lockForUpdate()->first();
+                $payment?->refund();
+            }
+        });
 
         if ($newStatus === 'cancelled') {
             return redirect()->route('bookings.index')
@@ -191,5 +229,12 @@ class BookingController extends Controller
     private function canCustomerCancelConfirmedBooking(Booking $booking): bool
     {
         return Carbon::now()->addHours(24)->lte(Carbon::parse($booking->date));
+    }
+
+    private function releasePaymentIfDue(Booking $booking): void
+    {
+        if ($booking->payment?->status === 'held' && $booking->payment->release_at?->lte(now())) {
+            $booking->payment->release('automatic_60_day_expiration');
+        }
     }
 }

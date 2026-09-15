@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::patch('bookings/{booking}/status', [BookingController::class, 'updateStatus'])
         ->name('bookings.updateStatus');
+    Route::post('bookings/{booking}/payment/approve', [PaymentController::class, 'approve'])
+        ->name('bookings.payment.approve');
+    Route::post('bookings/{booking}/payment/release', [PaymentController::class, 'release'])
+        ->name('bookings.payment.release');
     Route::resource('bookings', BookingController::class)->except(['edit', 'update', 'destroy']);
     Route::resource('services', ServiceController::class)->except(['show']);
     Route::get('bookings/{booking}/reviews/create', [ReviewController::class, 'create'])
