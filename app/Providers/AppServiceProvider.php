@@ -6,10 +6,12 @@ use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\Payment;
+use App\Models\Wallet;
 use App\Policies\BookingPolicy;
 use App\Policies\ReviewPolicy;
 use App\Policies\ServicePolicy;
 use App\Policies\PaymentPolicy;
+use App\Policies\WalletPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
@@ -51,5 +53,6 @@ class AppServiceProvider extends ServiceProvider
         \Gate::policy(Service::class, ServicePolicy::class);
         \Gate::policy(Review::class, ReviewPolicy::class);
         \Gate::policy(Payment::class, PaymentPolicy::class);
+        \Gate::policy(Wallet::class, WalletPolicy::class);
     }
 }

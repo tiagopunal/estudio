@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -32,6 +33,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+    Route::get('wallet', [WalletController::class, 'show'])->name('wallet.show');
+    Route::post('wallet/demo-top-up', [WalletController::class, 'topUp'])->name('wallet.demoTopUp');
 
     Route::patch('bookings/{booking}/status', [BookingController::class, 'updateStatus'])
         ->name('bookings.updateStatus');

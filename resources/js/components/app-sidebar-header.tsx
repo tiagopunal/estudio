@@ -10,6 +10,7 @@ export function AppSidebarHeader({ breadcrumbs: _breadcrumbs = [] }: { breadcrum
         { label: 'Dashboard', href: route('dashboard') },
         { label: 'Explorar servicios', href: route('services.browse') },
         { label: 'Mis reservas', href: route('bookings.index') },
+        { label: 'Mi billetera', href: route('wallet.show') },
         ...(user.role === 'professional' ? [{ label: 'Servicios', href: route('services.index') }] : []),
     ];
     return (

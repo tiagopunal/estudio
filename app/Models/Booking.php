@@ -11,7 +11,13 @@ class Booking extends Model
         'service_id',
         'date',
         'status',
+        'completed_at',
     ];
+
+    protected function casts(): array
+    {
+        return ['completed_at' => 'datetime'];
+    }
 
     // 🔥 reserva pertenece a usuario
     public function user()

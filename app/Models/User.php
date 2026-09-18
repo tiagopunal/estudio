@@ -37,6 +37,9 @@ class User extends Authenticatable
             $user->profile()->create([
                 'full_name' => $user->name,
             ]);
+            $user->wallet()->create([
+                'currency' => 'ARS',
+            ]);
         });
     }
 
@@ -70,5 +73,10 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
     }
 }

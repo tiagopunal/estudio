@@ -11,9 +11,12 @@ class Payment extends Model
         'customer_id',
         'service_price',
         'amount',
+        'initial_amount',
+        'held_amount',
         'currency',
         'status',
         'held_at',
+        'final_charge_at',
         'release_at',
         'released_at',
         'refunded_at',
@@ -25,7 +28,10 @@ class Payment extends Model
         return [
             'service_price' => 'decimal:2',
             'amount' => 'decimal:2',
+            'initial_amount' => 'decimal:2',
+            'held_amount' => 'decimal:2',
             'held_at' => 'datetime',
+            'final_charge_at' => 'datetime',
             'release_at' => 'datetime',
             'released_at' => 'datetime',
             'refunded_at' => 'datetime',
@@ -40,6 +46,11 @@ class Payment extends Model
     public function customer()
     {
         return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class);
     }
 
     public static function amountToCents(string|int $amount): int

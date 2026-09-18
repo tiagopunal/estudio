@@ -6,7 +6,9 @@ use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\User;
+use App\Services\WalletService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 class DemoMarketplaceSeeder extends Seeder
@@ -62,6 +64,11 @@ class DemoMarketplaceSeeder extends Seeder
             ['name' => 'Cliente Demo', 'password' => Hash::make('ProLink123!'), 'role' => 'client'],
         );
 
+        $wallets = app(WalletService::class);
+        if (! $reviewer->wallet->transactions()->where('type', 'demo_top_up')->exists()) {
+            $wallets->topUpDemo($reviewer, '1000000.00');
+        }
+
         foreach ($professionals as $index => [$name, $email, $profession, $location, $title, $description, $price, $category, $latitude, $longitude, $rating]) {
             $user = User::updateOrCreate(
                 ['email' => $email],
@@ -102,6 +109,23 @@ class DemoMarketplaceSeeder extends Seeder
                 ['date' => now()->subDays($index + 2), 'status' => 'completed'],
             );
 
+            $payment = $booking->payment()->firstOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'customer_id' => $reviewer->id,
+                    'service_price' => number_format($price, 2, '.', ''),
+                    'amount' => number_format($price, 2, '.', ''),
+                    'currency' => 'ARS',
+                    'status' => 'pending',
+                    'release_at' => Carbon::parse($booking->date)->addDays(60),
+                ],
+            );
+
+            if ($payment->status === 'pending') {
+                $wallets->holdClientFunds($payment);
+                $wallets->releaseFundsToProfessional($payment, 'demo_seed_completed');
+            }
+
             Review::updateOrCreate(
                 ['booking_id' => $booking->id],
                 ['user_id' => $reviewer->id, 'service_id' => $service->id, 'rating' => $rating, 'comment' => 'Muy buena experiencia. Cumplió con lo acordado y respondió con profesionalismo.'],
@@ -109,5 +133,79 @@ class DemoMarketplaceSeeder extends Seeder
 
             $service->update(['average_rating' => $service->reviews()->avg('rating') ?: 0, 'total_reviews' => $service->reviews()->count()]);
         }
+
+        $demoService = Service::query()->where('title', 'Reparación de pérdidas y cañerías')->first();
+
+        if ($demoService) {
+            $this->seedRefundScenario($demoService, $wallets);
+            $this->seedCompletedScenario($demoService, $wallets);
+        }
+    }
+
+    private function seedRefundScenario(Service $service, WalletService $wallets): void
+    {
+        $client = User::updateOrCreate(
+            ['email' => 'cliente.reembolso@prolink.com'],
+            ['name' => 'Cliente Reembolso', 'password' => Hash::make('ProLink123!'), 'role' => 'client'],
+        );
+        if (! $client->wallet->transactions()->where('type', 'demo_top_up')->exists()) {
+            $wallets->topUpDemo($client, '100000.00');
+        }
+
+        $booking = Booking::updateOrCreate(
+            ['user_id' => $client->id, 'service_id' => $service->id],
+            ['date' => now()->addDays(8), 'status' => 'cancelled'],
+        );
+        $payment = $booking->payment()->firstOrCreate([
+            'booking_id' => $booking->id,
+        ], [
+            'customer_id' => $client->id,
+            'service_price' => $service->price,
+            'amount' => $service->price,
+            'currency' => 'ARS',
+            'status' => 'pending',
+            'release_at' => Carbon::parse($booking->date)->addDays(60),
+        ]);
+
+        if ($payment->status === 'pending') {
+            $wallets->holdClientFunds($payment);
+            $wallets->refundClientFunds($payment, 'demo_refund');
+        }
+    }
+
+    private function seedCompletedScenario(Service $service, WalletService $wallets): void
+    {
+        $client = User::updateOrCreate(
+            ['email' => 'cliente.completado@prolink.com'],
+            ['name' => 'Cliente Completado', 'password' => Hash::make('ProLink123!'), 'role' => 'client'],
+        );
+        if (! $client->wallet->transactions()->where('type', 'demo_top_up')->exists()) {
+            $wallets->topUpDemo($client, '100000.00');
+        }
+
+        $booking = Booking::updateOrCreate(
+            ['user_id' => $client->id, 'service_id' => $service->id],
+            ['date' => now()->subDays(3), 'status' => 'completed'],
+        );
+        $payment = $booking->payment()->firstOrCreate([
+            'booking_id' => $booking->id,
+        ], [
+            'customer_id' => $client->id,
+            'service_price' => $service->price,
+            'amount' => $service->price,
+            'currency' => 'ARS',
+            'status' => 'pending',
+            'release_at' => Carbon::parse($booking->date)->addDays(60),
+        ]);
+
+        if ($payment->status === 'pending') {
+            $wallets->holdClientFunds($payment);
+            $wallets->releaseFundsToProfessional($payment, 'demo_completed');
+        }
+
+        Review::updateOrCreate(
+            ['booking_id' => $booking->id],
+            ['user_id' => $client->id, 'service_id' => $service->id, 'rating' => 5, 'comment' => 'Servicio completado correctamente.'],
+        );
     }
 }

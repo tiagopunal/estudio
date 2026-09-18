@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Models\Booking;
 use App\Models\Service;
 use App\Models\Payment;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use Inertia\Inertia;
 
 class BookingController extends Controller
 {
+    public function __construct(private readonly WalletService $wallets) {}
+
     public function index()
     {
         $bookings = Booking::query()
@@ -106,6 +109,8 @@ class BookingController extends Controller
                 'customer_id' => $user->id,
                 'service_price' => number_format($servicePrice / 100, 2, '.', ''),
                 'amount' => number_format($amount / 100, 2, '.', ''),
+                'initial_amount' => number_format($amount / 100, 2, '.', ''),
+                'held_amount' => '0.00',
                 'currency' => 'ARS',
                 'status' => 'pending',
                 'release_at' => Carbon::parse($request->date)->addDays(60),
@@ -131,9 +136,29 @@ class BookingController extends Controller
         $booking->load(['service.user', 'user', 'review', 'payment']);
         $this->releasePaymentIfDue($booking);
         $user = auth()->user();
+        $wallet = $this->wallets->getOrCreateWallet($user);
+        $paidAmount = Payment::amountToCents((string) ($booking->payment?->initial_amount ?: $booking->payment?->amount ?? '0'));
+        $servicePrice = Payment::amountToCents((string) ($booking->payment?->service_price ?? $booking->service->price));
+        $heldAmount = Payment::amountToCents((string) ($booking->payment?->held_amount ?: ($booking->payment?->status === 'held' ? $booking->payment?->amount : '0')));
+        $isFinalizedPayment = in_array($booking->payment?->status, ['released', 'refunded'], true);
+        $remainingBalance = $isFinalizedPayment ? 0 : max(0, $servicePrice - $heldAmount);
+        $releasedAmount = $booking->payment?->status === 'released'
+            ? ($booking->payment?->final_charge_at ? $servicePrice : Payment::amountToCents((string) ($booking->payment?->amount ?? '0')))
+            : 0;
 
         return Inertia::render('Bookings/Show', [
             'booking' => $booking,
+            'wallet' => [
+                'available_balance' => $wallet->available_balance,
+                'held_balance' => $wallet->held_balance,
+                'paid_amount' => number_format($paidAmount / 100, 2, '.', ''),
+                'service_price' => number_format($servicePrice / 100, 2, '.', ''),
+                'remaining_balance' => number_format($remainingBalance / 100, 2, '.', ''),
+                'paid_percentage' => $servicePrice > 0 ? round(($paidAmount * 10000) / $servicePrice) / 100 : 0,
+                'held_amount' => number_format($heldAmount / 100, 2, '.', ''),
+                'released_amount' => number_format($releasedAmount / 100, 2, '.', ''),
+                'final_charge_at' => $booking->payment?->final_charge_at,
+            ],
             'canManageStatus' => $user->isProfessional() && $user->id === $booking->service->user_id,
             'isReceivedBooking' => $user->id === $booking->service->user_id && $user->id !== $booking->user_id,
             'canReview' => $user->id === $booking->user_id
@@ -198,14 +223,22 @@ class BookingController extends Controller
             }
         }
 
-        DB::transaction(function () use ($booking, $newStatus): void {
-            $booking->update(['status' => $newStatus]);
-
-            if ($newStatus === 'cancelled') {
+        try {
+            DB::transaction(function () use ($booking, $newStatus): void {
                 $payment = $booking->payment()->lockForUpdate()->first();
-                $payment?->refund();
-            }
-        });
+
+                $booking->update([
+                    'status' => $newStatus,
+                    'completed_at' => $newStatus === 'completed' ? now() : $booking->completed_at,
+                ]);
+
+                if ($newStatus === 'cancelled' && $payment) {
+                    $this->wallets->refundClientFunds($payment, 'booking_cancelled');
+                }
+            });
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors(['status' => $exception->getMessage()]);
+        }
 
         if ($newStatus === 'cancelled') {
             return redirect()->route('bookings.index')
@@ -233,8 +266,21 @@ class BookingController extends Controller
 
     private function releasePaymentIfDue(Booking $booking): void
     {
-        if ($booking->payment?->status === 'held' && $booking->payment->release_at?->lte(now())) {
-            $booking->payment->release('automatic_60_day_expiration');
+        if ($this->paymentIsAutomaticallyReleasable($booking)) {
+            $this->wallets->releaseFundsToProfessional($booking->payment, 'automatic_60_day_expiration');
         }
+    }
+
+    private function paymentIsAutomaticallyReleasable(Booking $booking): bool
+    {
+        if ($booking->payment?->status !== 'held') {
+            return false;
+        }
+
+        $referenceDate = $booking->status === 'completed'
+            ? $booking->completed_at
+            : ($booking->status === 'confirmed' ? Carbon::parse($booking->date) : null);
+
+        return $referenceDate?->copy()->addDays(60)->lte(now()) ?? false;
     }
 }

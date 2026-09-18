@@ -33,6 +33,8 @@ interface Booking {
     review?: { id: number } | null;
     payment?: {
         amount: number | string;
+        initial_amount?: number | string;
+        held_amount?: number | string;
         service_price: number | string;
         currency: string;
         status: 'pending' | 'held' | 'released' | 'refunded';
@@ -48,6 +50,17 @@ interface Props {
     canCustomerCancelConfirmed: boolean;
     canApprovePayment: boolean;
     canReleasePayment: boolean;
+    wallet: {
+        available_balance: number | string;
+        held_balance: number | string;
+        paid_amount: number | string;
+        service_price: number | string;
+        remaining_balance: number | string;
+        paid_percentage: number;
+        held_amount: number | string;
+        released_amount: number | string;
+        final_charge_at?: string | null;
+    };
 }
 
 const statusColors = {
@@ -81,9 +94,9 @@ function formatBookingDate(value: string) {
     return parsed.toLocaleString();
 }
 
-export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canReview, canCancelPending, canCustomerCancelConfirmed, canApprovePayment, canReleasePayment }: Props) {
+export default function BookingsShow({ booking, canManageStatus, isReceivedBooking, canReview, canCancelPending, canCustomerCancelConfirmed, canApprovePayment, canReleasePayment, wallet }: Props) {
     const [processing, setProcessing] = useState(false);
-    const errors = usePage().props.errors as { status?: string };
+    const errors = usePage().props.errors as { status?: string; payment?: string };
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
@@ -201,14 +214,22 @@ export default function BookingsShow({ booking, canManageStatus, isReceivedBooki
 
                                 {booking.payment && (
                                     <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-                                        <p className="font-bold">Pago simulado · {currency.format(Number(booking.payment.amount))}</p>
+                                        <p className="font-bold">Pago simulado · {currency.format(Number(wallet.service_price))}</p>
                                         <p className="mt-1 leading-6">Estado: {booking.payment.status === 'pending' ? 'Pendiente de aprobación' : booking.payment.status === 'held' ? 'Retenido en custodia' : booking.payment.status === 'released' ? 'Liberado' : 'Reembolsado'}</p>
+                                        <p className="mt-2 leading-6">Seña abonada: {currency.format(Number(wallet.paid_amount))}</p>
+                                        <p className="leading-6">Saldo restante: {currency.format(Number(wallet.remaining_balance))}</p>
+                                        <p className="leading-6">Total en custodia: {currency.format(Number(wallet.held_amount))}</p>
+                                        {wallet.remaining_balance === '0.00' || Number(wallet.remaining_balance) === 0 ? <p className="mt-1 font-bold">Servicio abonado en su totalidad.</p> : <p className="mt-1">El saldo pendiente queda fuera de esta simulación.</p>}
+                                        {booking.status === 'completed' && booking.payment.status === 'held' && <p className="mt-2 font-bold">Pago completado. Esperando confirmación del cliente para liberar el pago.</p>}
+                                        {booking.payment.status === 'released' && <p className="mt-2 font-bold">Pago liberado al profesional: {currency.format(Number(wallet.released_amount))}</p>}
                                         <p className="mt-2 leading-6">No se procesa dinero real.</p>
+                                        {errors.payment && <p className="mt-3 font-bold text-red-700">{errors.payment}</p>}
                                         {canApprovePayment && (
                                             <Button onClick={() => router.post(route('bookings.payment.approve', booking.id), {}, { preserveScroll: true })} className="prolink-primary mt-4 w-full">
                                                 Aprobar pago simulado
                                             </Button>
                                         )}
+                                        {canApprovePayment && Number(wallet.available_balance) < Number(booking.payment.amount) && <Link href={route('wallet.show')} className="mt-3 block text-center text-sm font-bold text-blue-700 hover:underline">Cargar saldo en mi billetera</Link>}
                                         {canReleasePayment && (
                                             <Button onClick={() => router.post(route('bookings.payment.release', booking.id), {}, { preserveScroll: true })} className="prolink-primary mt-4 w-full">
                                                 Confirmar trabajo y liberar pago
