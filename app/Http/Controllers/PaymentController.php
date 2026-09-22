@@ -49,7 +49,7 @@ class PaymentController extends Controller
         }
 
         try {
-            $this->wallets->releaseFundsToProfessional($booking->payment, 'customer_confirmed_completion');
+            $this->wallets->releaseFundsToProfessional($booking->payment, 'client_confirmed_completion');
         } catch (RuntimeException $exception) {
             return back()->withErrors(['payment' => $exception->getMessage()]);
         }

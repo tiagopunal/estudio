@@ -232,7 +232,7 @@ export default function BookingsShow({ booking, canManageStatus, isReceivedBooki
                                         {canApprovePayment && Number(wallet.available_balance) < Number(booking.payment.amount) && <Link href={route('wallet.show')} className="mt-3 block text-center text-sm font-bold text-blue-700 hover:underline">Cargar saldo en mi billetera</Link>}
                                         {canReleasePayment && (
                                             <Button onClick={() => router.post(route('bookings.payment.release', booking.id), {}, { preserveScroll: true })} className="prolink-primary mt-4 w-full">
-                                                Confirmar trabajo y liberar pago
+                                                Confirmar trabajo terminado y liberar pago
                                             </Button>
                                         )}
                                     </div>

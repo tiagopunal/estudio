@@ -15,6 +15,45 @@ class PaymentRulesTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_booking_amount_must_be_between_ten_and_one_hundred_percent_of_historical_price(): void
+    {
+        [$customer, , $service] = $this->participants();
+        $date = now()->addDay()->format('Y-m-d\TH:i');
+
+        $this->actingAs($customer)
+            ->post('/bookings', [
+                'service_id' => $service->id,
+                'date' => $date,
+                'amount' => '10.00',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('payments', [
+            'amount' => '10.00',
+            'service_price' => '100.00',
+        ]);
+
+        $this->actingAs($customer)
+            ->post('/bookings', [
+                'service_id' => $service->id,
+                'date' => now()->addDays(2)->format('Y-m-d\TH:i'),
+                'amount' => '100.00',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('payments', ['amount' => '100.00']);
+
+        foreach (['9.99', '100.01'] as $amount) {
+            $this->actingAs($customer)
+                ->post('/bookings', [
+                    'service_id' => $service->id,
+                    'date' => now()->addDays(3)->format('Y-m-d\TH:i'),
+                    'amount' => $amount,
+                ])
+                ->assertSessionHasErrors('amount');
+        }
+    }
+
     public function test_booking_creates_a_pending_payment_with_historical_price_and_release_date(): void
     {
         [$customer, , $service] = $this->participants();
@@ -94,7 +133,7 @@ class PaymentRulesTest extends TestCase
 
         $payment = Payment::where('booking_id', $booking->id)->firstOrFail();
         $this->assertSame('released', $payment->status);
-        $this->assertSame('customer_confirmed_completion', $payment->release_reason);
+        $this->assertSame('client_confirmed_completion', $payment->release_reason);
         $releasedAt = $payment->released_at;
 
         $this->actingAs($customer)
@@ -135,7 +174,7 @@ class PaymentRulesTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'booking_id' => $due->id,
             'status' => 'released',
-            'release_reason' => 'automatic_60_day_expiration',
+            'release_reason' => 'automatic_60_days',
         ]);
         $this->assertDatabaseHas('payments', ['booking_id' => $future->id, 'status' => 'held']);
     }

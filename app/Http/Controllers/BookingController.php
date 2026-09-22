@@ -143,7 +143,7 @@ class BookingController extends Controller
         $isFinalizedPayment = in_array($booking->payment?->status, ['released', 'refunded'], true);
         $remainingBalance = $isFinalizedPayment ? 0 : max(0, $servicePrice - $heldAmount);
         $releasedAmount = $booking->payment?->status === 'released'
-            ? ($booking->payment?->final_charge_at ? $servicePrice : Payment::amountToCents((string) ($booking->payment?->amount ?? '0')))
+            ? Payment::amountToCents((string) ($booking->payment?->amount ?? '0'))
             : 0;
 
         return Inertia::render('Bookings/Show', [
@@ -267,7 +267,7 @@ class BookingController extends Controller
     private function releasePaymentIfDue(Booking $booking): void
     {
         if ($this->paymentIsAutomaticallyReleasable($booking)) {
-            $this->wallets->releaseFundsToProfessional($booking->payment, 'automatic_60_day_expiration');
+            $this->wallets->releaseFundsToProfessional($booking->payment, 'automatic_60_days');
         }
     }
 

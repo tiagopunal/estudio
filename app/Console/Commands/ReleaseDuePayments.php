@@ -26,7 +26,7 @@ class ReleaseDuePayments extends Command
                     : ($booking?->status === 'confirmed' ? Carbon::parse($booking->date) : null);
 
                 if ($referenceDate?->copy()->addDays(60)->lte(now())) {
-                    $wallets->releaseFundsToProfessional($payment, 'automatic_60_day_expiration');
+                    $wallets->releaseFundsToProfessional($payment, 'automatic_60_days');
                 }
             });
 
